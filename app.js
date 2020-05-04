@@ -15,7 +15,6 @@ const rewriteUnsuppBrowserMethods = (req, res, next) => {
 
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
-
 app.use('/public', static);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
