@@ -18,3 +18,5 @@ module.exports = {
   houses: getCollectionFn("houses"),
   comments: getCollectionFn("comments")
 };
+
+// make a comment
