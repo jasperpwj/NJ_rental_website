@@ -51,7 +51,11 @@ router.get('/:id', async (req, res) => {
 router.get('/', async (req, res) => {
 	try {
 		const userList = await userData.getAllUsers();
-		res.json(userList);
+		let name = [];
+		for(let i = 0; i < userList.length; i++){
+			name.push(userList[i].email);
+		}
+		res.json(name);
 	} catch (e) {
 		res.sendStatus(500);
 	}
@@ -60,20 +64,46 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
 	let userInfo = req.body;
-	let errors = []; 
-
-	if (!userInfo.username)    errors.push('You must provide a username');
-	if (!userInfo.email) 	   errors.push('You must provide a valid email');
-	if (!userInfo.phoneNumber) errors.push('You must provide a phone number');
-	if (!userInfo.password)    errors.push('You must provide a password');
-
+	let errors = [];
+	let allNames = [];
+	let allEmails = [];
+	try {
+		const userList = await userData.getAllUsers();
+		for (let i = 0; i < userList.length; i++) {
+			allNames.push(userList[i].username);
+			allEmails.push(userList[i].email);
+		}
+	} catch (e) {
+		return res.sendStatus(500);
+	}
+	if (!userInfo.username) {
+		errors.push('Error: Please check that you\'ve entered an username');
+	} else {
+		let username = userInfo.username;
+		for (let i = 0; i < allNames.length; i++) {
+			if (username.toLowerCase() === allNames[i].toLowerCase()) {
+				errors.push('Error: The username you entered is invalid, please try another one');
+			}
+		}
+	}
+	if (!userInfo.email) {
+		errors.push('Error: Please check that you\'ve entered an email');
+	} else {
+		const email = userInfo.email.toLowerCase();
+		for (let i = 0; i < allEmails.length; i++) {
+			if (email === allEmails[i].toLowerCase()) {
+				errors.push('Error: The email you entered is invalid, please try another one');
+			}
+		}
+	}
+	if (!userInfo.phoneNumber) errors.push('Error: Please check that you\'ve entered a phone number');
+	if (!userInfo.password)    errors.push('Error: Please check that you\'ve entered a password');
 	if (errors.length > 0) {
-		res.render('usershbs/new', {
+		return res.render('usershbs/new', {
 			errors: errors,
 			hasErrors: true,
 			newUser: userInfo
 		});
-		return;
 	}
 
 	try {
@@ -91,10 +121,10 @@ router.post('/', async (req, res) => {
 router.post('/login', async (req, res) => {
 	let userInfo = req.body;
 	let errors = []; 
-	const message = "Either username or password do not match";
+	const message = "Error: Either username or password does not match";
 	
-	if (!userInfo.username) errors.push('No username provided');
-	if (!userInfo.password) errors.push('No password provided');
+	if (!userInfo.username) errors.push('Error: Please check that you\'ve entered an username');
+	if (!userInfo.password) errors.push('Error: Please check that you\'ve entered a password');
 	if (errors.length > 0) {
 		res.status(401).render('usershbs/login', {error: errors, hasErrors: true});
 		return;
@@ -102,8 +132,8 @@ router.post('/login', async (req, res) => {
 
 	try {
 		const user = await userData.getUserByName(userInfo.username);
-		let compare = await bcrypt.compare(userInfo.password, user.password);
-		if (compare) {
+		const passwordIsCorrect = await bcrypt.compare(userInfo.password, user.password);
+		if (passwordIsCorrect) {
 			req.session.user = {id: user._id, name: user.username};
 			return res.redirect(`/users/${user._id}`);
 		} else {
