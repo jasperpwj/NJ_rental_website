@@ -39,6 +39,54 @@ router.get('/', async (req, res) => {
 	res.render('houseshbs/index', {houses: houseList});
 });
 
+router.post('/sort', async (req, res) => {
+	const sortData = req.body;
+	if(!sortData.sort){
+		const houseList = await houseData.getAllHouses();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if(sortData.sort === "priceUp"){
+		const houseList = await houseData.getAllHousesSortedByPriceAsc();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if(sortData.sort === "priceDown"){
+		const houseList = await houseData.getAllHousesSortedByPriceDec();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if(sortData.sort === "newest"){
+		const houseList = await houseData.getAllHousesSortedByDateDec();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+});
+
+router.post('/search', async (req, res) => {
+	const searchData = req.body.search;
+	let low = req.body.low;
+	let high = req.body.high;
+	low = Number( low );
+	high = Number( high );
+
+	let houseList = [];
+	if ((!searchData&&(!low||!high)) || low > high) {
+		houseList = await houseData.getAllHouses();
+		return res.render('houseshbs/index', {houses: houseList}); // todo
+	}
+	else if (!searchData && (low <= high)) {
+		houseList = await houseData.findByPriceRange(low, high);
+	}
+	else if (searchData && !low && !high) {
+		houseList = await houseData.findByRoomType(searchData);
+	}
+	else {
+		houseList = await houseData.findByRoomTypeAndPriceRange(searchData, low, high);
+	}
+	if (houseList.length == 0) {
+		return res.render('houseshbs/index', {houses: houseList, isEmpty: true});
+	} else {
+		return res.render('houseshbs/index', {houses: houseList, isEmpty: false});
+	}
+});
+
 router.get('/:id', async (req, res) => {
 	try {
 		const house = await houseData.getHouseById(req.params.id);
@@ -55,7 +103,7 @@ router.get('/:id/edit', async (req, res) => {
 	try {
 		const house = await houseData.getHouseById(req.params.id);
 		let imgs = [];
-		if(house.images){
+		if(house.images.length > 0){
 			for(let i = 0; i < house.images.length; i++){
 				const img = await gfs.files.findOne({ filename: house.images[i] });
 				imgs.push(img);
@@ -66,7 +114,7 @@ router.get('/:id/edit', async (req, res) => {
 			res.render('houseshbs/edit', {house: house, hasImages: false});
 		}
 	} catch (e) {
-		res.status(404).json({ error: 'User not found' }); // todo!!!!!!!!!!!!!!!!!!
+		res.status(404).json({ error: 'Houses not found' }); // todo!!!!!!!!!!!!!!!!!!
 	}
 });
 
@@ -87,15 +135,38 @@ router.post('/', upload.single('image'), async (req, res) => {
 	let housePostData = req.body;
 	let errors = [];
 
-	if (!housePostData.houseInfo)  errors.push('No house information provided');
-	if (!housePostData.postedDate) errors.push('No post date provided');
-	if (!housePostData.statement)  errors.push('No house statement provided');
-	if (!housePostData.userId) 	   errors.push('No user ID provided');
-	if (!housePostData.latitude)   errors.push('No latitude provided');
-	if (!housePostData.longitude)  errors.push('No longitude provided');
-    if (!housePostData.roomType)   errors.push('No room type provided');
-    if (!housePostData.price) 	   errors.push('No rental price provided');
-	if (!req.file)  	   		   errors.push('No image provided');
+	if (!housePostData.houseInfo) {
+		errors.push('No house information provided');
+	}
+	if (!housePostData.statement) {
+		errors.push('No house statement provided');
+	}
+
+	if (!housePostData.lat) {
+		errors.push('No latitude provided');
+	} else {
+		housePostData.lat = Number( housePostData.lat );
+	}
+
+	if (!housePostData.lng) {
+		errors.push('No longitude provided');
+	} else {
+		housePostData.lng = Number( housePostData.lng );
+	}
+
+    if (!housePostData.roomType) {
+		errors.push('No room type provided');
+	
+	}
+    if (!housePostData.price) {
+		errors.push('No rental price provided');
+	} else {
+		housePostData.price = Number( housePostData.price );
+	}
+
+	if (!req.file) {
+		errors.push('No image provided');
+	}
 
 	if (errors.length > 0) {
 		res.render('houseshbs/new', {
@@ -108,9 +179,9 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 	let images = req.file.filename;
 	try {
-		const {houseInfo, postedDate, statement, userId, latitude, longitude, roomType, price} = housePostData;
+		const {houseInfo, statement, userId, lat, lng, roomType, price} = housePostData;
 		const newhouse = await houseData.addHouse(
-            houseInfo, postedDate, statement, userId, latitude, longitude, roomType, price, images
+            houseInfo, statement, userId, lat, lng, roomType, price, images
         );
 		res.redirect(`/houses/${newhouse._id}`);
 	} catch (e) {
@@ -133,7 +204,7 @@ router.post('/addimg/:id', upload.single('image'), async (req, res) => {
 	}
 	try {
 		await houseData.updateHouse(req.params.id, updatedObject);
-		res.redirect(`/houses/${req.params.id}`);
+		res.redirect(`/houses/${req.params.id}/edit`);
 	} catch (e) {
 		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
 	}
@@ -144,26 +215,26 @@ router.patch('/:id', async (req, res) => {
 
 	let updatedObject = {};
 	try {
-		const oldHouse = await houseData.getHouseById(req.params.id);
-        if (reqBody.postedDate && reqBody.postedDate !== oldHouse.postedDate) {
-			updatedObject.postedDate = reqBody.postedDate;
-		}
-        if (reqBody.statement && reqBody.statement !== oldHouse.statement) {
+		const house = await houseData.getHouseById(req.params.id);
+        if (reqBody.statement && reqBody.statement !== house.statement) {
 			updatedObject.statement = reqBody.statement;
 		}
-        if (reqBody.roomType && reqBody.roomType !== oldHouse.roomType) {
+        if (reqBody.roomType && reqBody.roomType !== house.roomType) {
 			updatedObject.roomType = reqBody.roomType;
 		}
-        if (reqBody.price && reqBody.price !== oldHouse.price) {
-			updatedObject.price = reqBody.price;
-		}
+        if (reqBody.price) {
+			const price = Number( reqBody.price );
+			if(price !== house.price) {
+				updatedObject.price = price;
+			}
+		} 
 	} catch (e) {
 		res.status(404).json({ error: 'House update failed' }); // todo!!!!!!!!!!!!!!!!!!
 		return;
 	}
 	try {
 		await houseData.updateHouse(req.params.id, updatedObject);
-		res.redirect(`/houses/${req.params.id}`);
+		res.redirect(`/houses/${req.params.id}/edit`);
 	} catch (e) {
 		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
 	}
@@ -192,7 +263,7 @@ router.delete('/:id/removeimage/:filename', async(req, res) => {
     try{
         await gfs.remove({ filename: req.params.filename, root: 'images' });
         return res.redirect(`/houses/${req.params.id}/edit`);
-    }catch(e){
+    } catch(e) {
         res.status(404).json({ e: "DELETE /houses/removeimage/:filename" }); // todo!!!!!!!!!
     }
 });
