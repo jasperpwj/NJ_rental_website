@@ -9,6 +9,43 @@ module.exports = {
         return await houseCollection.find({}).toArray();
     },
 
+    /************************ advanced mongodb ************************/
+    async getAllHousesSortedByPriceAsc() {
+        const houseCollection = await houses();
+		return await houseCollection.find({}).sort({ price: 1 }).toArray();
+    },
+
+    async getAllHousesSortedByPriceDec() {
+        const houseCollection = await houses();
+		return await houseCollection.find({}).sort({ price: -1 }).toArray();
+    },
+
+    async getAllHousesSortedByDateDec() {
+        const houseCollection = await houses();
+		return await houseCollection.find({}).sort({ postedDate: -1 }).toArray();
+    },
+
+    async findByRoomType(roomType){
+        if (!roomType) throw 'You must provide room type';
+        const houseCollection = await houses();
+        return await houseCollection.find({ 'roomType': roomType }).toArray();
+    },
+
+    async findByPriceRange(low, high){
+        const houseCollection = await houses();
+        return await houseCollection.find({ 'price': {$gte: low, $lte: high} }).toArray();
+    },
+
+    async findByRoomTypeAndPriceRange(roomType, low, high){
+        const houseCollection = await houses();
+        return await houseCollection
+            .find({ 
+                $and: [ { 'roomType': roomType }, {'price': {$gte: low, $lte: high}} ]
+            })
+            .toArray();
+    },
+    /************************ advanced mongodb ************************/
+
     async getHouseById(id) {
         const houseCollection = await houses();
         if(typeof id === 'string'){
@@ -19,21 +56,24 @@ module.exports = {
         return house;
     },
 
-    async addHouse(houseInfo, postedDate, statement, userId, latitude, longitude, roomType, price, image) {
+    async addHouse(houseInfo, statement, userId, lat, lng, roomType, price, image) {
         let imgs = [];
         imgs.push(image);
+        const d = new Date();
+        const date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+
         const houseCollection = await houses();
         const user = await users.getUserById(userId);
         const newHouse = {
             houseInfo: houseInfo,
-            postedDate: postedDate,
+            postedDate: date,
             statement: statement,
             user: {
                 _id: userId,
                 username: `${user.username}`
             },
-            latitude: latitude,
-            longitude: longitude,
+            lat: lat,
+            lng: lng,
             roomType: roomType,
             price: price,
             images: imgs,
@@ -47,10 +87,12 @@ module.exports = {
 
     async updateHouse(id, newHouse) {
         const houseCollection = await houses();
-
         let updatedHouse = await this.getHouseById(id);
 
-        if (newHouse.postedDate) updatedHouse.postedDate = newHouse.postedDate;
+        const d = new Date();
+        const date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+        updatedHouse.postedDate = date;
+        
         if (newHouse.statement) updatedHouse.statement = newHouse.statement;
         if (newHouse.roomType) updatedHouse.roomType = newHouse.roomType;
         if (newHouse.price) updatedHouse.price = newHouse.price;
