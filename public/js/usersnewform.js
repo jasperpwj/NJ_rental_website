@@ -1,3 +1,6 @@
+$('#nav-logout').hide();
+$('#nav-profile').hide();
+
 $('#usersNewForm').submit((event) => {
     let hasError = false;
 

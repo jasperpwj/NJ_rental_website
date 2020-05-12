@@ -1,9 +1,13 @@
+$('#nav-logout').hide();
+$('#nav-profile').hide();
+
 $('#usersLoginForm').submit((event) => {
     $('#loginError').hide();
     event.preventDefault();
     let hasError = false;
 
     if(!$('#name').val() || !$('#pword').val()) {
+        $('#spinner').show();
         hasError = true;
         $('#loginError').show();
         $('#loginError').html('Error: Please check that you\'ve entered your username and password!');
