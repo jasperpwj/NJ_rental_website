@@ -1,0 +1,96 @@
+<article class="container-fluid">
+
+
+    <div class="col-sm-8" id="acc-info">
+        <h1>Your Information</h1>
+        <p>Username: {{ user.username }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Phone: {{ user.phoneNumber }}</p>
+
+        <nav class="nav" id="nav-profile">
+            <ul class="nav nav-tabs">
+                <li class="nav-item" id="post-house">
+                    <a class="nav-link" href="/users/{{user._id}}/newHouse">Post House</a>
+                </li>
+                <li class="nav-item" id="edit-profile">
+                    <a class="nav-link" href="/users/{{user._id}}/edit">Edit profile</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+<!-- Nav bar-->
+    <div>
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#your-house">Houses You Post</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#your-favorite">Your Favorite Houses</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#your-comments">Comments</a>
+            </li>
+        </ul>
+    </div>
+<!--Tab panes-->
+    <div class="tab-content">
+        <div id="your-house" class="container tab-pane active">
+            {{#if user.houseLists.length}}
+                <ul>
+                    {{#each user.houseLists}}
+                        <div>
+                            <p>house information: {{this.houseInfo}}</p>
+                        </div>
+                        <div>
+                            <a class="link" href="/houses/{{this._id}}/edit">Edit house data</a>
+                        </div>
+                        <div>
+                            <form action="/houses/{{this._id}}" method="POST">
+                                <input type="hidden" name="_method" value="DELETE" />
+                                <button type="submit" class="btn btn-dark">Delete this house</button>
+                            </form>
+                        </div>
+                    {{/each}}
+                </ul>
+            {{/if}}
+
+        </div>
+
+        <div id="your-favorite" class="container tab-pane fade">
+            {{#if user.storedHouses.length}}
+                <ul>
+                    {{#each user.storedHouses}}
+                        <div>
+                            <p>View this <a class="link" href="/houses/{{this._id}}">HOUSE</a></p>
+                            <p>{{this.houseInfo}}</p>
+                            <a href="/users/removestorehouse/{{this._id}}" class="btn btn-dark">Remove</a>
+                        </div>
+                    {{/each}}
+                </ul>
+            {{/if}}
+        </div>
+
+        <div id="your-comments" class="container tab-pane fade">
+            {{#if user.comments.length}}
+                <ul>
+                    {{#each user.comments}}
+                        <div>
+                            <p>{{this.text}}</p>
+                            <address>House information: {{this.houseInfo}}</address>
+                            <address>Date: {{this.commentDate}}</address>
+                        </div>
+                        <div>
+                            <form action="/comments/{{this._id}}" method="POST">
+                                <input type="hidden" name="_method" value="DELETE" />
+                                <button type="submit" class="btn btn-dark">Delete the comment</button>
+                            </form>
+                        </div>
+                    {{/each}}
+                </ul>
+            {{/if}}
+        </div>
+    </div>
+
+
+    <script src="/public/js/usersprofile.js"></script>
+</article>

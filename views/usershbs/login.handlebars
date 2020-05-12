@@ -1,0 +1,40 @@
+<div class="container-fluid" id="div-login">
+    <form action="/users/login" id="usersLoginForm" method="POST">
+        <div class="form-group">
+            <label for="name">Username: </label>
+            <input type="text" class="form-control" id="name" placeholder="Username" name="username" required>
+            <div class="invalid-feedback">Please fill out this filed</div>
+        </div>
+        <div class="form-group">
+            <label for="pword">Password: </label>
+            <input type="password"  class="form-control" id="pword" placeholder="Password" name="password" required>
+            <div class="invalid-feedback">Please fill out this filed</div>
+        </div>
+        
+        <button class="btn btn-dark" type="submit">
+            <span class="spinner-border spinner-border-sm" id="spinner" hidden></span>
+            Login</button>
+
+
+        <div id="loginError" hidden></div>
+    </form>
+    <br>
+
+    {{#if hasErrors}}
+        <ul class="alert alert-danger alert-dismissible fade show">
+            {{#each error}}
+                <li>
+                    {{this}}
+                </li>
+            {{/each}}
+        </ul>
+    {{/if}}
+
+
+
+
+    <div>
+        <p>Haven't got an account? <a class="link" href="/users/new">Create a new one!</a></p>
+    </div>
+    <script src="/public/js/usersloginform.js"></script>
+</div>
