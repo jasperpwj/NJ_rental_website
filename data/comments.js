@@ -22,10 +22,22 @@ module.exports = {
         return comment;
     },
 
-    async addComment(userId, houseId, commentDate, text) {
+    async addComment(userId, houseId, text) {
         const commentCollection = await comments();
         const user = await users.getUserById(userId);
         const house = await houses.getHouseById(houseId);
+
+        const d = new Date();
+        let month = d.getMonth() + 1;
+        let day = d.getDate();
+        if(month < 10){
+            month = "0" + month;
+        }
+        else if(day < 10){
+            day = "0" + day;
+        }
+        const date = d.getFullYear() + "-" + month + "-" + day;
+
         const newComment = {
             user: {
                 _id: userId,
@@ -35,13 +47,13 @@ module.exports = {
                 _id: houseId,
                 houseInfo: `${house.houseInfo}`
             },
-            commentDate: commentDate,
+            commentDate: date,
             text: text
         };
         const insertInfo = await commentCollection.insertOne(newComment);
         const id = insertInfo.insertedId + "";
-        await users.addCommentToUser(userId, id, house.houseInfo, commentDate, text);
-        await houses.addCommentToHouse(houseId, id, user.username, commentDate, text);
+        await users.addCommentToUser(userId, id, house.houseInfo, date, text);
+        await houses.addCommentToHouse(houseId, id, user.username, date, text);
         return await this.getCommentById(insertInfo.insertedId);
     },
 
