@@ -144,7 +144,7 @@ module.exports = {
         return await this.getUserById(userId);
     },
 
-    async storeHouse(userId, houseId, houseInfo) {
+    async userStoreHouse(userId, houseId, houseInfo) {
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
@@ -162,7 +162,7 @@ module.exports = {
         return await this.getUserById(userId);
     },
 
-    async removeStoredHouse(userId, houseId){
+    async userRemoveStoredHouse(userId, houseId){
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
