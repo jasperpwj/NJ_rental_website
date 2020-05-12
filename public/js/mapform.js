@@ -43,18 +43,27 @@ function initMap() {
         zoom: 13,
         center: {lat: 40.728157, lng: -74.077644} // jersey city lat lng
     });
+
+    var icon = {
+        url: '/public/img/icon.png',
+        scaledSize: new google.maps.Size(50, 30), // scaled size
+        origin: new google.maps.Point(0,0), // origin
+        anchor: new google.maps.Point(0, 0) // anchor
+    };
+
     for (let i = 0; i < allHouses.length; i++) {
         const latlng = {lat: allHouses[i].lat, lng: allHouses[i].lng};
         
         const marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            //icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/library_maps.png',
+            icon: icon,
             label: {
                 text: '$'+ allHouses[i].price +'',
                 fontFamily: 'Open Sans',
                 fontWeight: 'bold',
-                fontSize: '16px'
+                fontSize: '16px',
+                color: 'white'
             }
         });
 
