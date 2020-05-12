@@ -231,3 +231,14 @@ body {
         width: 100%;
     }
 }
+
+.infoWindow{
+    width: 100px;
+    height: auto;
+}
+
+.infoImg{
+    width: 100%;
+    height: auto;
+
+}
