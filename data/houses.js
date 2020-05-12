@@ -9,7 +9,6 @@ module.exports = {
         return await houseCollection.find({}).toArray();
     },
 
-    /************************ advanced mongodb ************************/
     async getAllHousesSortedByPriceAsc() {
         const houseCollection = await houses();
 		return await houseCollection.find({}).sort({ price: 1 }).toArray();
@@ -44,7 +43,6 @@ module.exports = {
             })
             .toArray();
     },
-    /************************ advanced mongodb ************************/
 
     async getHouseById(id) {
         const houseCollection = await houses();
@@ -59,8 +57,17 @@ module.exports = {
     async addHouse(houseInfo, statement, userId, lat, lng, roomType, price, image) {
         let imgs = [];
         imgs.push(image);
+
         const d = new Date();
-        const date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+        let month = d.getMonth() + 1;
+        let day = d.getDate();
+        if(month < 10){
+            month = "0" + month;
+        }
+        else if(day < 10){
+            day = "0" + day;
+        }
+        const date = d.getFullYear() + "-" + month + "-" + day;
 
         const houseCollection = await houses();
         const user = await users.getUserById(userId);
@@ -77,6 +84,7 @@ module.exports = {
             roomType: roomType,
             price: price,
             images: imgs,
+            storedByUsers: [],
             comments: []
         };
         const insertInfo = await houseCollection.insertOne(newHouse);
@@ -90,13 +98,20 @@ module.exports = {
         let updatedHouse = await this.getHouseById(id);
 
         const d = new Date();
-        const date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-        updatedHouse.postedDate = date;
+        let month = d.getMonth() + 1;
+        let day = d.getDate();
+        if(month < 10){
+            month = "0" + month;
+        }
+        else if(day < 10){
+            day = "0" + day;
+        }
+        updatedHouse.postedDate = d.getFullYear() + "-" + month + "-" + day;
         
         if (newHouse.statement) updatedHouse.statement = newHouse.statement;
-        if (newHouse.roomType) updatedHouse.roomType = newHouse.roomType;
-        if (newHouse.price) updatedHouse.price = newHouse.price;
-        if (newHouse.images) updatedHouse.images = newHouse.images;
+        if (newHouse.roomType)  updatedHouse.roomType  = newHouse.roomType;
+        if (newHouse.price)     updatedHouse.price     = newHouse.price;
+        if (newHouse.images)    updatedHouse.images    = newHouse.images;
 
         await houseCollection.updateOne({_id: ObjectId.createFromHexString(id)}, {$set: updatedHouse});
         return await this.getHouseById(id);
@@ -139,5 +154,34 @@ module.exports = {
         const updateInfo = await houseCollection.updateOne({_id: houseId}, {$pull: {comments: {_id: commentId}}});
         if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to delete comment from house';
         return await this.getHouseById(houseId);
-    }
+    },
+
+    async storedByUser(houseId, userId) {
+        const houseCollection = await houses();
+        if(typeof houseId === 'string'){
+            houseId = ObjectId.createFromHexString(houseId);
+        }
+        const house = await this.getHouseById(houseId);
+        const updateInfo = await houseCollection.updateOne(
+            {_id: houseId},
+            {$addToSet: {storedByUsers: {_id: userId}}}
+        );
+        await users.userStoreHouse(userId, houseId + "", house.houseInfo);
+        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to add store';
+        return await this.getHouseById(houseId);
+    },
+
+    async removeStoreByUser(houseId, userId){
+        const houseCollection = await houses();
+        await users.userRemoveStoredHouse(userId, houseId);
+        if(typeof houseId === 'string'){
+            houseId = ObjectId.createFromHexString(houseId);
+        }
+        const updateInfo = await houseCollection.updateOne(
+            {_id: houseId}, 
+            {$pull: {storedByUsers: {_id: userId}}}
+        );
+        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to remove store';
+        return await this.getHouseById(houseId);
+    },
 };
