@@ -13,9 +13,15 @@ const rewriteUnsuppBrowserMethods = (req, res, next) => {
 	next();
 };
 
-app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.engine('handlebars', exphbs({
+	defaultLayout: 'main',
+	helpers: {
+		toJson : function(context) {
+			return JSON.stringify(context);
+		}
+	}
+}));
 app.set('view engine', 'handlebars');
-
 app.use('/public', static);
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -45,14 +51,28 @@ app.use(async (req, res, next) => {
 	next();
 });
 
-app.use('/users/storehouse/:houseid', async (req, res, next) => {
+app.use('/users/profile', async (req, res, next) => {
 	if (!req.session.user) {
 		return res.status(401).render('usershbs/login');
 	}
 	next();
 });
 
-app.use('/users/removestorehouse/:houseid', async (req, res, next) => {
+app.use('/houses/storehouse/:houseid', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(401).render('usershbs/login');
+	}
+	next();
+});
+
+app.use('/houses/removestorehouse/:houseid', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(401).render('usershbs/login');
+	}
+	next();
+});
+
+app.use('/comments', async (req, res, next) => {
 	if (!req.session.user) {
 		return res.status(401).render('usershbs/login');
 	}
