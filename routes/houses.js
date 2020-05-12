@@ -123,7 +123,11 @@ router.get('/storehouse/:houseid', async (req, res) => {
 		await houseData.storedByUser(req.params.houseid, req.session.user.id);
 		res.redirect(`/houses/${req.params.houseid}`);
 	} catch (e) {
-		res.status(404).json({ error: 'House not found' });
+		res.status(404).render('houseshbs/index', {
+			houses: [], 
+			isEmpty: true,
+			error: "Sorry, we couldn't find the house, maybe it has been removed by its host or it never exists!"
+		});
 	}
 });
 
@@ -132,7 +136,11 @@ router.get('/removestorehouse/:houseid', async (req, res) => {
 		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
 		res.redirect(`/houses/${req.params.houseid}`);
 	} catch (e) {
-		res.status(404).json({ error: 'User/House not found' });
+		res.status(404).render('houseshbs/index', {
+			houses: [], 
+			isEmpty: true,
+			error: "Sorry, we couldn't find the house!"
+		});
 	}
 });
 
@@ -145,8 +153,7 @@ router.get('/:id/edit', async (req, res) => {
 				const img = await gfs.files.findOne({ filename: house.images[i] });
 				imgs.push(img);
 			}
-			res.render('houseshbs/edit', {house: house, hasImages: true, images: imgs});
-			return;
+			return res.render('houseshbs/edit', {house: house, hasImages: true, images: imgs});
 		} else {
 			res.render('houseshbs/edit', {house: house, hasImages: false});
 		}
@@ -247,7 +254,7 @@ router.post('/addimg/:id', upload.single('image'), async (req, res) => {
 		await houseData.updateHouse(req.params.id, updatedObject);
 		res.redirect(`/houses/${req.params.id}/edit`);
 	} catch (e) {
-		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+		res.sendStatus(500);
 	}
 });
 
@@ -270,14 +277,17 @@ router.patch('/:id', async (req, res) => {
 			}
 		} 
 	} catch (e) {
-		res.status(404).json({ error: 'House update failed' }); // todo!!!!!!!!!!!!!!!!!!
-		return;
+		return res.status(404).render('houseshbs/index', {
+			houses: [], 
+			isEmpty: true,
+			error: "Sorry, we couldn't find the house!"
+		});
 	}
 	try {
 		await houseData.updateHouse(req.params.id, updatedObject);
 		res.redirect(`/houses/${req.params.id}/edit`);
 	} catch (e) {
-		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+		res.sendStatus(500);
 	}
 });
 
@@ -298,7 +308,7 @@ router.delete('/:id/removeimage/:filename', async(req, res) => {
 	try {
 		await houseData.updateHouse(req.params.id, updatedObject);
 	} catch (e) {
-		res.status(500).json({ error: "house info update (remove img) failed" }); // todo!!!!
+		res.sendStatus(500);
 	}
 	
     try{
@@ -334,7 +344,7 @@ router.delete('/:id', async (req, res) => {
 		await houseData.removeHouse(req.params.id);
 		res.redirect(`/users/${req.session.user.id}`);
 	} catch (e) {
-		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+		res.sendStatus(500);
 	}
 });
 

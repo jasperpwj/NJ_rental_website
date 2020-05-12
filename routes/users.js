@@ -61,20 +61,9 @@ router.get('/removestorehouse/:houseid', async (req, res) => {
 		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
 		res.redirect(`/users/${req.session.user.id}`);
 	} catch (e) {
-		res.status(404).json({ error: 'User/House not found' });
+		res.status(404).json({ error: 'User/House not found' });// todo!!!!!!!!!!!!!!!!!!!!
 	}
 });
-
-/******************** todo ********************/
-router.get('/', async (req, res) => {
-	try {
-		const userList = await userData.getAllUsers();
-		res.json(userList);
-	} catch (e) {
-		res.sendStatus(500);
-	}
-});
-/******************** todo ********************/
 
 router.post('/', async (req, res) => {
 	let userInfo = req.body;
@@ -177,8 +166,7 @@ router.patch('/:id', async (req, res) => {
 			updatedObject.password = pw;
 		}
 	} catch (e) {
-		res.status(404).json({ error: 'Update failed' }); // todo!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		return;
+		return res.status(404).json({ error: 'Update failed' }); // todo!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 	try {
 		await userData.updateUser(req.params.id, updatedObject);
