@@ -1,0 +1,68 @@
+<article class="container-fluid">
+
+    <div class="slideshow-container">
+        {{#if houses.images}}
+            {{#each houses.images}}
+                <div class="mySlides" >
+                    <img src="/houses/image/{{this}}" alt="" style="width:100%">
+                </div>
+            {{/each}}
+        {{/if}}
+        <a class="prev" onclick="nextSlides(-1)" >&#10094;</a>
+        <a class="next" onclick="nextSlides(1)">&#10095;</a>
+    </div>
+    <br>
+
+    <div class="container" id="house-info">
+        <h1>{{ houses.houseInfo }}</h1>
+        <address>Posted by {{ houses.user.username }}</address>
+        <p>Posted Date: {{ houses.postedDate }}</p>
+        <p>Room Type: {{ houses.roomType }}</p>
+        <p>Price ($): {{ houses.price }}</p>
+        <p>Statement: {{ houses.statement }}</p>
+        <div>
+            <p>Favorite: {{ houses.storedByUsers.length }}</p>
+            {{#if isStored}}
+                <p><a class="link" href="/houses/removestorehouse/{{houses._id}}">Remove from your Favorite List</a></p>
+            {{else}}
+                <p><a class="link" href="/houses/storehouse/{{houses._id}}">Add to Favourite List</a></p>
+            {{/if}}
+        </div>
+    </div>
+    <br>
+
+    <div class="container" id="add-comment">
+        <form action="/comments" id="housesSingleForm" method="POST">
+            <textarea class="form-control" name="houseId" hidden>{{ houseid }}</textarea>
+
+            <label for="comment">make a comment: </label>
+            <textarea  class="form-control" rows="4" name="text" id="comment" cols="30"></textarea>
+            <button type="submit" class="btn btn-dark">Submit</button>
+        </form>
+    </div>
+    <br>
+
+    <div class="container" id="house-comment">
+
+        {{#if houses.comments.length}}
+            <h1>Comments</h1>
+            <ul>
+                {{#each houses.comments}}
+                    <div class="container" id="each-comment">
+                        <p id="user-name">User: {{this.username}}</p>
+                        <p>{{this.text}}</p>
+                        <address> {{this.commentDate}}</address>
+                    </div>
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+
+
+
+
+
+
+
+    <script src="/public/js/housessingleform.js"></script>
+</article>
