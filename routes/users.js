@@ -1,181 +1,229 @@
-const mongoCollections = require('../config/mongoCollections');
-const users = mongoCollections.users;
-const ObjectId = require("mongodb").ObjectId;
+const express     = require('express'), 
+ 	  data 		  = require('../data'), 
+	  bcrypt  	  = require('bcryptjs'),
+	  router      = express.Router(),
+	  userData    = data.users,
+	  houseData   = data.houses,
+	  saltRounds  = 5;
 
-module.exports = {
-    async getAllUsers() {
-        const userCollection = await users();
-        const userList = await userCollection.find({}).toArray();
-        if (!userList) throw 'No users in system!';
-        return userList;
-    },
+router.get('/new', async (req, res) => {
+	res.render('usershbs/new', {});
+});
 
-    async getUserById(id) {
-        const userCollection = await users();
-        if(typeof id === 'string'){
-            id = ObjectId.createFromHexString(id);
-        }
-        const user = await userCollection.findOne({_id: id});
-        if (!user) throw 'User not found';
-        return user;
-    },
+router.get('/login', async (req, res) => {
+	res.render('usershbs/login', {});
+});
 
-    async getUserByName(name) {
-        const userCollection = await users();
-        const user = await userCollection.findOne({username: name});
-        if (!user) throw 'User not found';
-        return user;
-    },
-    
-    async addUser(username, email, phoneNumber, password) {
-        const userCollection = await users();
-        const newUser = {
-            username: username,
-            email: email,
-            phoneNumber: phoneNumber,
-            password: password,
-            houseLists: [],
-            storedHouses: [],
-            comments: []
-        }; 
-        const insertInfo = await userCollection.insertOne(newUser);
-        if (insertInfo.insertedCount === 0) throw 'Insert failed!';
-        return await this.getUserById(insertInfo.insertedId);
-    },
+router.get('/profile', async (req, res) => {
+	res.redirect(`/users/${req.session.user.id}`);
+});
 
-    async updateUser(id, newUser){
-        const userCollection = await users();
-        let oldUser = null;
-        try{
-            oldUser = await this.getUserById(id);
-        }catch (e){
-            console.log(e);
-            return;
-        }
-        if (newUser.email) oldUser.email = newUser.email;
-        if (newUser.phoneNumber) oldUser.phoneNumber = newUser.phoneNumber;
-        if (newUser.password) oldUser.password = newUser.password;
+router.get('/logout', async (req, res) => {
+	req.session.user = undefined;
+	res.redirect('/houses');
+});
 
-        const updatedInfo = await userCollection.updateOne({_id: ObjectId.createFromHexString(id)}, {$set: oldUser});
-        if (!updatedInfo.matchedCount && !updatedInfo.modifiedCount) throw 'user update failed';
-        return await this.getUserById(id);
-    },
-    
-    async removeUser(id){
-        if (!id) throw 'You must provide an id to search for';
-        const userCollection = await users();
-        if(typeof id === 'string'){
-          id = ObjectId.createFromHexString(id);
-        }
-        const deletionInfo = await userCollection.deleteOne({_id: id});
-        if (deletionInfo.deletedCount === 0) throw `Could not delete user with id of ${id}`;
-        return true;
-    },
-    
-    async addHouseToUser(userId, houseId, houseInfo){
-        const userCollection = await users();
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        const updateInfo = await userCollection.updateOne(
-            {_id: userId},
-            {$addToSet: {
-                houseLists: {
-                    _id: houseId, 
-                    houseInfo: houseInfo,
-                }}
-            }
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'House added to user failed';
-        return await this.getUserById(userId);
-    },
-    
-    async removeHouseFromUser(userId, houseId){
-        const userCollection = await users();
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        const updateInfo = await userCollection.updateOne(
-            {_id: userId}, 
-            {$pull: {
-                houseLists: {
-                    _id: houseId
-                }}
-            }
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'House deleted from user failed';
-        return await this.getUserById(userId);
-    },
+router.get('/:id/edit', async (req, res) => {
+	try {
+		const user = await userData.getUserById(req.params.id);
+		res.render('usershbs/edit', {user: user});
+	} catch (e) {
+		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
+	}
+});
 
-    async addCommentToUser(userId, commentId, houseInfo, commentDate, text) {
-        const userCollection = await users();
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        const updateInfo = await userCollection.updateOne(
-            {_id: userId},
-            {$addToSet: {
-                comments: {
-                    _id: commentId, 
-                    houseInfo: houseInfo,
-                    commentDate: commentDate, 
-                    text: text
-                }}
-            }
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to add comment to user';
-        return await this.getUserById(userId);
-    },
+router.get('/:id/newHouse', async (req, res) => {
+	try {
+		await userData.getUserById(req.params.id);
+		res.render('houseshbs/new', {userid: req.params.id});
+	} catch (e) {
+		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
+	}
+});
 
-    async removeCommentFromUser(userId, commentId){
-        const userCollection = await users();
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        const updateInfo = await userCollection.updateOne(
-            {_id: userId}, 
-            {$pull: {
-                comments: {
-                    _id: commentId
-                }}
-            }
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to delete comment from user';
-        return await this.getUserById(userId);
-    },
+router.get('/:id', async (req, res) => {
+	if (!req.session.user) {
+		return res.status(401).render('usershbs/login');
+	} 
+	else if(req.session.user.id !== req.params.id) {
+		return res.sendStatus(403);
+	}
+	try {
+		const user = await userData.getUserById(req.params.id);
+		res.render('usershbs/single', {user: user});
+	} catch (e) {
+		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
+	}
+});
 
-    async userStoreHouse(userId, houseId, houseInfo) {
-        const userCollection = await users();
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        const updateInfo = await userCollection.updateOne(
-            {_id: userId},
-            {$addToSet: {
-                storedHouses: {
-                    _id: houseId, 
-                    houseInfo: houseInfo
-                }}
-            }
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'USER Failed (store house)';
-        return await this.getUserById(userId);
-    },
+router.get('/removestorehouse/:houseid', async (req, res) => {
+	try {
+		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
+		res.redirect(`/users/${req.session.user.id}`);
+	} catch (e) {
+		res.status(404).json({ error: 'User/House not found' });
+	}
+});
 
-    async userRemoveStoredHouse(userId, houseId){
-        const userCollection = await users();
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        const updateInfo = await userCollection.updateOne(
-            {_id: userId}, 
-            {$pull: {
-                storedHouses: {
-                    _id: houseId
-                }}
-            }
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'USER Failed (remove stored house)';
-        return await this.getUserById(userId);
-    }
-};
+/******************** todo ********************/
+router.get('/', async (req, res) => {
+	try {
+		const userList = await userData.getAllUsers();
+		res.json(userList);
+	} catch (e) {
+		res.sendStatus(500);
+	}
+});
+/******************** todo ********************/
+
+router.post('/', async (req, res) => {
+	let userInfo = req.body;
+	let errors = [];
+	let allNames = [];
+	let allEmails = [];
+	try {
+		const userList = await userData.getAllUsers();
+		for (let i = 0; i < userList.length; i++) {
+			allNames.push(userList[i].username);
+			allEmails.push(userList[i].email);
+		}
+	} catch (e) {
+		return res.sendStatus(500);
+	}
+	if (!userInfo.username) {
+		errors.push('Error: Please check that you\'ve entered an username');
+	} else {
+		let username = userInfo.username;
+		for (let i = 0; i < allNames.length; i++) {
+			if (username.toLowerCase() === allNames[i].toLowerCase()) {
+				errors.push('Error: The username you entered is invalid, please try another one');
+			}
+		}
+	}
+	if (!userInfo.email) {
+		errors.push('Error: Please check that you\'ve entered an email');
+	} else {
+		const email = userInfo.email.toLowerCase();
+		for (let i = 0; i < allEmails.length; i++) {
+			if (email === allEmails[i].toLowerCase()) {
+				errors.push('Error: The email you entered is invalid, please try another one');
+			}
+		}
+	}
+	if (!userInfo.phoneNumber) errors.push('Error: Please check that you\'ve entered a phone number');
+	if (!userInfo.password)    errors.push('Error: Please check that you\'ve entered a password');
+	if (errors.length > 0) {
+		return res.render('usershbs/new', {
+			errors: errors,
+			hasErrors: true,
+			newUser: userInfo
+		});
+	}
+
+	try {
+		const pw = await bcrypt.hash(userInfo.password, saltRounds);
+		const newuser = await userData.addUser(
+			userInfo.username, userInfo.email, userInfo.phoneNumber, pw
+		);
+		req.session.user = {id: newuser._id, name: newuser.username};
+		res.redirect(`/users/${newuser._id}`);
+	} catch (e) {
+		res.sendStatus(500);
+	}
+});
+
+router.post('/login', async (req, res) => {
+	let userInfo = req.body;
+	let errors = []; 
+	const message = "Error: Either username or password does not match";
+	
+	if (!userInfo.username) errors.push('Error: Please check that you\'ve entered an username');
+	if (!userInfo.password) errors.push('Error: Please check that you\'ve entered a password');
+	if (errors.length > 0) {
+		res.status(401).render('usershbs/login', {error: errors, hasErrors: true});
+		return;
+	}
+
+	try {
+		const user = await userData.getUserByName(userInfo.username);
+		const passwordIsCorrect = await bcrypt.compare(userInfo.password, user.password);
+		if (passwordIsCorrect) {
+			req.session.user = {id: user._id, name: user.username};
+			return res.redirect(`/users/${user._id}`);
+		} else {
+			return res.status(401).render('usershbs/login', {
+				error: [message], hasErrors: true
+			});
+		}
+	} catch (e) {
+		res.render('usershbs/login', {error: [message], hasErrors: true});
+	}
+});
+
+router.patch('/:id', async (req, res) => {
+	const reqBody = req.body;
+	
+	let updatedObject = {};
+	try {
+		const user = await userData.getUserById(req.params.id);
+        if (reqBody.email && reqBody.email !== user.email) {
+			updatedObject.email = reqBody.email;
+		}
+        if (reqBody.phoneNumber && reqBody.phoneNumber !== user.phoneNumber) {
+			updatedObject.phoneNumber = reqBody.phoneNumber;
+		}
+        if (reqBody.password) {
+			const pw = await bcrypt.hash(reqBody.password, saltRounds);
+			updatedObject.password = pw;
+		}
+	} catch (e) {
+		res.status(404).json({ error: 'Update failed' }); // todo!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		return;
+	}
+	try {
+		await userData.updateUser(req.params.id, updatedObject);
+		res.redirect(`/users/${req.params.id}`);
+	} catch (e) {
+		res.status(500).json({ error: e });
+	}
+});
+
+/******************** todo ********************/
+// router.delete('/:id', async (req, res) => {
+// 	if (!req.params.id) throw 'You must specify an ID to delete';
+// 	let user = null;
+// 	try {
+// 		user = await userData.getUserById(req.params.id);
+// 		if(user.houseLists.length !== 0){
+// 			for(let i = 0; i < user.houseLists.length; i++){
+// 				const houseId = user.houseLists[i]._id;
+// 				const house = await houseData.getHouseById(houseId);
+// 				if(house.comments.length !== 0){
+// 					for(let i = 0; i < house.comments.length; i++){
+// 						const commentId = house.comments[i]._id;
+// 						await commentData.removeComment(commentId);
+// 					}
+// 				}
+// 				await houseData.removeHouse(houseId);
+// 			}
+// 		}
+// 		if(user.comments.length !== 0){
+// 			for(let i = 0; i < user.comments.length; i++){
+// 				const commentId = user.comments[i]._id;
+// 				await commentData.removeComment(commentId);
+// 			}
+// 		}
+// 	} catch (e) {
+// 		res.status(404).json({ error: 'User not found' });
+// 		return;
+// 	}
+
+// 	try {
+// 		await userData.removeUser(req.params.id);
+// 		res.json({"deleted": true, "data": user});
+// 	} catch (e) {
+// 		res.sendStatus(500);
+// 	}
+// });
+
+module.exports = router;

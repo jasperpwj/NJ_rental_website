@@ -1,187 +1,341 @@
-const mongoCollections = require('../config/mongoCollections');
-const houses = mongoCollections.houses;
-const users = require('./users');
-const ObjectId = require("mongodb").ObjectId;
+const express = require('express');
+const data = require('../data');
+const router = express.Router();
+const houseData = data.houses;
+const commentData = data.comments;
 
-module.exports = {
-    async getAllHouses() {
-        const houseCollection = await houses();
-        return await houseCollection.find({}).toArray();
-    },
+/*********************************************************************************/
+const path = require('path');
+const crypto = require('crypto');
+const mongo = require('mongodb');
+const multer = require('multer');
+const Grid = require('gridfs-stream');
+const GridFsStorage = require('multer-gridfs-storage');
 
-    async getAllHousesSortedByPriceAsc() {
-        const houseCollection = await houses();
-		return await houseCollection.find({}).sort({ price: 1 }).toArray();
-    },
+let gfs;
+mongo.MongoClient.connect('mongodb://localhost:27017', function(err, client) {
+    const db = client.db('JerseyCityRentalWeb');
+    gfs = Grid(db, mongo);
+    gfs.collection('images');
+});
 
-    async getAllHousesSortedByPriceDec() {
-        const houseCollection = await houses();
-		return await houseCollection.find({}).sort({ price: -1 }).toArray();
-    },
+const storage = new GridFsStorage({
+	url: "mongodb://localhost:27017/JerseyCityRentalWeb", 
+	file: (req, file) => {
+	  	if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+			const buf = crypto.randomBytes(16);
+			const filename = buf.toString('hex') + path.extname(file.originalname);
+			return {filename: filename, bucketName: 'images'};
+	  	} else {
+			return null;
+	  	}
+	}
+});
+const upload = multer({ storage });
+/*********************************************************************************/
 
-    async getAllHousesSortedByDateDec() {
-        const houseCollection = await houses();
-		return await houseCollection.find({}).sort({ postedDate: -1 }).toArray();
-    },
+router.get('/', async (req, res) => {
+	const houseList = await houseData.getAllHouses();
+	res.render('houseshbs/index', {houses: houseList});
+});
 
-    async findByRoomType(roomType){
-        if (!roomType) throw 'You must provide room type';
-        const houseCollection = await houses();
-        return await houseCollection.find({ 'roomType': roomType }).toArray();
-    },
+router.post('/sort', async (req, res) => {
+	const sortData = req.body;
+	if(!sortData.sort){
+		const houseList = await houseData.getAllHouses();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if(sortData.sort === "priceUp"){
+		const houseList = await houseData.getAllHousesSortedByPriceAsc();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if(sortData.sort === "priceDown"){
+		const houseList = await houseData.getAllHousesSortedByPriceDec();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if(sortData.sort === "newest"){
+		const houseList = await houseData.getAllHousesSortedByDateDec();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+});
 
-    async findByPriceRange(low, high){
-        const houseCollection = await houses();
-        return await houseCollection.find({ 'price': {$gte: low, $lte: high} }).toArray();
-    },
+router.post('/search', async (req, res) => {
+	const searchData = req.body.search;
+	let low = req.body.low;
+	let high = req.body.high;
+	low = Number( low );
+	high = Number( high );
 
-    async findByRoomTypeAndPriceRange(roomType, low, high){
-        const houseCollection = await houses();
-        return await houseCollection
-            .find({ 
-                $and: [ { 'roomType': roomType }, {'price': {$gte: low, $lte: high}} ]
-            })
-            .toArray();
-    },
+	let houseList = [];
+	if ((!searchData&&(!low||!high)) || low > high) {
+		houseList = await houseData.getAllHouses();
+		return res.render('houseshbs/index', {houses: houseList});
+	}
+	else if (!searchData && (low <= high)) {
+		houseList = await houseData.findByPriceRange(low, high);
+	}
+	else if (searchData && !low && !high) {
+		houseList = await houseData.findByRoomType(searchData);
+	}
+	else {
+		houseList = await houseData.findByRoomTypeAndPriceRange(searchData, low, high);
+	}
+	if (houseList.length == 0) {
+		return res.render('houseshbs/index', {
+			houses: houseList, 
+			isEmpty: true, 
+			error: "Sorry, we couldn't find any house, please change your search range!"});
+	} else {
+		return res.render('houseshbs/index', {houses: houseList, isEmpty: false});
+	}
+});
 
-    async getHouseById(id) {
-        const houseCollection = await houses();
-        if(typeof id === 'string'){
-            id = ObjectId.createFromHexString(id);
+router.get('/:id', async (req, res) => {
+	try {
+		const house = await houseData.getHouseById(req.params.id);
+		if(req.session.user){
+			const storeList = house.storedByUsers;
+			for(let i = 0; i < storeList.length; i++){
+				if(storeList[i]._id === req.session.user.id){
+					return res.render('houseshbs/single', {
+						houses: house, 
+						houseid: req.params.id,
+						isStored: true
+					});
+				}
+			}
+		}
+		res.render('houseshbs/single', {
+			houses: house, 
+			houseid: req.params.id
+		});
+	} catch (e) {
+		res.status(404).render('houseshbs/index', {
+			houses: [], 
+			isEmpty: true,
+			error: "Sorry, we couldn't find the house, maybe it has been removed by its host or it never exists!"
+		});
+	}
+});
+
+router.get('/storehouse/:houseid', async (req, res) => {
+	try {
+		await houseData.storedByUser(req.params.houseid, req.session.user.id);
+		res.redirect(`/houses/${req.params.houseid}`);
+	} catch (e) {
+		res.status(404).json({ error: 'House not found' });
+	}
+});
+
+router.get('/removestorehouse/:houseid', async (req, res) => {
+	try {
+		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
+		res.redirect(`/houses/${req.params.houseid}`);
+	} catch (e) {
+		res.status(404).json({ error: 'User/House not found' });
+	}
+});
+
+router.get('/:id/edit', async (req, res) => {
+	try {
+		const house = await houseData.getHouseById(req.params.id);
+		let imgs = [];
+		if(house.images.length > 0){
+			for(let i = 0; i < house.images.length; i++){
+				const img = await gfs.files.findOne({ filename: house.images[i] });
+				imgs.push(img);
+			}
+			res.render('houseshbs/edit', {house: house, hasImages: true, images: imgs});
+			return;
+		} else {
+			res.render('houseshbs/edit', {house: house, hasImages: false});
+		}
+	} catch (e) {
+		res.status(404).render('houseshbs/index', { // todo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			houses: [], 
+			isEmpty: true,
+			error: "Sorry, we couldn't find the house!"
+		});
+	}
+});
+
+router.get('/image/:filename', async(req, res) => {
+    try{
+        const file = await gfs.files.findOne({ filename: req.params.filename });
+        if (!file || file.length === 0) {
+            return res.status(404).json({err: 'No file exists'}); // todo!!!!!!!!!!!!!!!!!!
         }
-        const house = await houseCollection.findOne({_id: id});
-        if (!house) throw 'House not found';
-        return house;
-    },
+        const readstream = gfs.createReadStream(file.filename);
+        readstream.pipe(res);
+    }catch(e){
+        res.status(404).json({ e: "GET /image/:filename" }); // todo!!!!!!!!!!!!!!!!!!
+    }
+});
 
-    async addHouse(houseInfo, statement, userId, lat, lng, roomType, price, image) {
-        let imgs = [];
-        imgs.push(image);
+router.post('/', upload.single('image'), async (req, res) => {
+	let housePostData = req.body;
+	let errors = [];
 
-        const d = new Date();
-        let month = d.getMonth() + 1;
-        let day = d.getDate();
-        if(month < 10){
-            month = "0" + month;
-        }
-        else if(day < 10){
-            day = "0" + day;
-        }
-        const date = d.getFullYear() + "-" + month + "-" + day;
+	if (!housePostData.houseInfo) {
+		errors.push('No house information provided');
+	}
+	if (!housePostData.statement) {
+		errors.push('No house statement provided');
+	}
 
-        const houseCollection = await houses();
-        const user = await users.getUserById(userId);
-        const newHouse = {
-            houseInfo: houseInfo,
-            postedDate: date,
-            statement: statement,
-            user: {
-                _id: userId,
-                username: `${user.username}`
-            },
-            lat: lat,
-            lng: lng,
-            roomType: roomType,
-            price: price,
-            images: imgs,
-            storedByUsers: [],
-            comments: []
-        };
-        const insertInfo = await houseCollection.insertOne(newHouse);
-        const houseId = insertInfo.insertedId + "";
-        await users.addHouseToUser(userId, houseId, houseInfo);
-        return await this.getHouseById(insertInfo.insertedId);
-    },
+	if (!housePostData.lat) {
+		errors.push('No latitude provided');
+	} else {
+		housePostData.lat = Number( housePostData.lat );
+	}
 
-    async updateHouse(id, newHouse) {
-        const houseCollection = await houses();
-        let updatedHouse = await this.getHouseById(id);
+	if (!housePostData.lng) {
+		errors.push('No longitude provided');
+	} else {
+		housePostData.lng = Number( housePostData.lng );
+	}
 
-        const d = new Date();
-        let month = d.getMonth() + 1;
-        let day = d.getDate();
-        if(month < 10){
-            month = "0" + month;
-        }
-        else if(day < 10){
-            day = "0" + day;
-        }
-        updatedHouse.postedDate = d.getFullYear() + "-" + month + "-" + day;
-        
-        if (newHouse.statement) updatedHouse.statement = newHouse.statement;
-        if (newHouse.roomType)  updatedHouse.roomType  = newHouse.roomType;
-        if (newHouse.price)     updatedHouse.price     = newHouse.price;
-        if (newHouse.images)    updatedHouse.images    = newHouse.images;
+    if (!housePostData.roomType) {
+		errors.push('No room type provided');
+	
+	}
+    if (!housePostData.price) {
+		errors.push('No rental price provided');
+	} else {
+		housePostData.price = Number( housePostData.price );
+	}
 
-        await houseCollection.updateOne({_id: ObjectId.createFromHexString(id)}, {$set: updatedHouse});
-        return await this.getHouseById(id);
-    },
+	if (!req.file) {
+		errors.push('No image provided');
+	}
 
-    async removeHouse(id) {
-        const houseCollection = await houses();
-        const house = await this.getHouseById(id);
-        await users.removeHouseFromUser(house.user._id, id);
-        const deletionInfo = await houseCollection.removeOne({_id: ObjectId.createFromHexString(id)});
-        if (deletionInfo.deletedCount === 0) throw `Could not delete house with id of ${id}`
-        return house;
-    },
+	if (errors.length > 0) {
+		res.render('houseshbs/new', {
+			errors: errors,
+			hasErrors: true,
+			newHouse: housePostData
+		});
+		return;
+	}
 
-    async addCommentToHouse(houseId, commentId, username, commentDate, text) {
-        const houseCollection = await houses();
-        if(typeof houseId === 'string'){
-            houseId = ObjectId.createFromHexString(houseId);
-        }
-        const updateInfo = await houseCollection.updateOne(
-            {_id: houseId},
-            {$addToSet: {
-                comments: {
-                    _id: commentId, 
-                    username: username,
-                    commentDate: commentDate, 
-                    text: text
-                }}
-            }
+	const images = req.file.filename;
+	try {
+		const {houseInfo, statement, userId, lat, lng, roomType, price} = housePostData;
+		const newhouse = await houseData.addHouse(
+            houseInfo, statement, userId, lat, lng, roomType, price, images
         );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to add comment to house';
-        return await this.getHouseById(houseId);
-    },
+		res.redirect(`/houses/${newhouse._id}`);
+	} catch (e) {
+		res.sendStatus(500);
+	}
+});
 
-    async removeCommentFromHouse(houseId, commentId){
-        const houseCollection = await houses();
-        if(typeof houseId === 'string'){
-            houseId = ObjectId.createFromHexString(houseId);
-        }
-        const updateInfo = await houseCollection.updateOne({_id: houseId}, {$pull: {comments: {_id: commentId}}});
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to delete comment from house';
-        return await this.getHouseById(houseId);
-    },
+router.post('/addimg/:id', upload.single('image'), async (req, res) => {
+	if(!req.file){
+		return res.redirect(`/houses/${req.params.id}/edit`);
+	}
+	let updatedObject = {};
+	try {
+		const oldHouse = await houseData.getHouseById(req.params.id);
+		updatedObject.images = oldHouse.images;
+		updatedObject.images.push(req.file.filename);
+	} catch (e) {
+		res.status(404).json({ error: 'Image added failed' }); // todo!!!!!!!!!!!!!!!!!!
+		return;
+	}
+	try {
+		await houseData.updateHouse(req.params.id, updatedObject);
+		res.redirect(`/houses/${req.params.id}/edit`);
+	} catch (e) {
+		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+	}
+});
 
-    async storedByUser(houseId, userId) {
-        const houseCollection = await houses();
-        if(typeof houseId === 'string'){
-            houseId = ObjectId.createFromHexString(houseId);
-        }
-        const house = await this.getHouseById(houseId);
-        const updateInfo = await houseCollection.updateOne(
-            {_id: houseId},
-            {$addToSet: {storedByUsers: {_id: userId}}}
-        );
-        await users.userStoreHouse(userId, houseId + "", house.houseInfo);
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to add store';
-        return await this.getHouseById(houseId);
-    },
+router.patch('/:id', async (req, res) => {
+	const reqBody = req.body;
 
-    async removeStoreByUser(houseId, userId){
-        const houseCollection = await houses();
-        await users.userRemoveStoredHouse(userId, houseId);
-        if(typeof houseId === 'string'){
-            houseId = ObjectId.createFromHexString(houseId);
-        }
-        const updateInfo = await houseCollection.updateOne(
-            {_id: houseId}, 
-            {$pull: {storedByUsers: {_id: userId}}}
-        );
-        if (!updateInfo.matchedCount && !updateInfo.modifiedCount) throw 'Failed to remove store';
-        return await this.getHouseById(houseId);
-    },
-};
+	let updatedObject = {};
+	try {
+		const house = await houseData.getHouseById(req.params.id);
+        if (reqBody.statement && reqBody.statement !== house.statement) {
+			updatedObject.statement = reqBody.statement;
+		}
+        if (reqBody.roomType && reqBody.roomType !== house.roomType) {
+			updatedObject.roomType = reqBody.roomType;
+		}
+        if (reqBody.price) {
+			const price = Number( reqBody.price );
+			if(price !== house.price) {
+				updatedObject.price = price;
+			}
+		} 
+	} catch (e) {
+		res.status(404).json({ error: 'House update failed' }); // todo!!!!!!!!!!!!!!!!!!
+		return;
+	}
+	try {
+		await houseData.updateHouse(req.params.id, updatedObject);
+		res.redirect(`/houses/${req.params.id}/edit`);
+	} catch (e) {
+		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+	}
+});
+
+router.delete('/:id/removeimage/:filename', async(req, res) => {
+	let updatedObject = {};
+	try {
+		const oldHouse = await houseData.getHouseById(req.params.id);
+		updatedObject.images = oldHouse.images;
+
+		const index = updatedObject.images.indexOf(req.params.filename);
+		if (index > -1) {
+			updatedObject.images.splice(index, 1);
+		}
+	} catch (e) {
+		res.status(404).json({ error: 'Image removed failed' }); // todo!!!!!!!!!!!!!!!!!!
+		return;
+	}
+	try {
+		await houseData.updateHouse(req.params.id, updatedObject);
+	} catch (e) {
+		res.status(500).json({ error: "house info update (remove img) failed" }); // todo!!!!
+	}
+	
+    try{
+        await gfs.remove({ filename: req.params.filename, root: 'images' });
+        return res.redirect(`/houses/${req.params.id}/edit`);
+    } catch(e) {
+        res.status(404).json({ e: "DELETE /houses/removeimage/:filename" }); // todo!!!!!!!!!
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+	if (!req.params.id) throw 'You must specify an ID to delete';
+	let house = null;
+	try {
+		house = await houseData.getHouseById(req.params.id);
+		if(house.comments.length !== 0){
+			for(let i = 0; i < house.comments.length; i++){
+				const commentId = house.comments[i]._id;
+				await commentData.removeComment(commentId);
+			}
+		}
+		if(house.images.length !== 0){
+			for(let i = 0; i < house.images.length; i++){
+				const filename = house.images[i];
+				await gfs.remove({ filename: filename, root: 'images' });
+			}
+		}
+	} catch (e) {
+		res.status(404).json({ error: 'Delete failed (house)' }); // todo!!!!!!!!!!!!!!!!!!
+		return;
+	}
+	try {
+		await houseData.removeHouse(req.params.id);
+		res.redirect(`/users/${req.session.user.id}`);
+	} catch (e) {
+		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+	}
+});
+
+module.exports = router;

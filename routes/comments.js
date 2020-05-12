@@ -1,69 +1,48 @@
-const mongoCollections = require('../config/mongoCollections');
-const comments = mongoCollections.comments;
-const users = require('./users');
-const houses = require('./houses');
-const ObjectId = require("mongodb").ObjectId;
+const express = require('express');
+const router = express.Router();
+const data = require('../data');
+const commentData = data.comments;
 
-module.exports = {
-    async getAllComments() {
-        const commentCollection = await comments();
-        const commentList = await commentCollection.find({}).toArray();
-        if (!commentList) throw 'No users in system!';
-        return commentList;
-    },
+/******************** todo ********************/
+router.get('/:id', async (req, res) => {
+	try {
+		const comment = await commentData.getCommentById(req.params.id);
+		res.json(comment);
+	} catch (e) {
+		res.status(404).json({ error: 'Comment not found' });
+	}
+});
 
-    async getCommentById(id) {
-        const commentCollection = await comments();
-        if(typeof id === 'string'){
-            id = ObjectId.createFromHexString(id);
-        }
-        const comment = await commentCollection.findOne({_id: id});
-        if (!comment) throw 'User not found';
-        return comment;
-    },
+router.get('/', async (req, res) => {
+	try {
+		const commentList = await commentData.getAllComments();
+		res.json(commentList);
+	} catch (e) {
+		res.status(500).json({ error: e });
+	}
+});
+/******************** todo ********************/
 
-    async addComment(userId, houseId, text) {
-        const commentCollection = await comments();
-        const user = await users.getUserById(userId);
-        const house = await houses.getHouseById(houseId);
+router.post('/', async (req, res) => {
+	if (!req.body || !req.body.text) {
+		res.redirect(`/houses/${req.body.houseId}`);
+		return;
+	}
+	try {
+		const comment = await commentData.addComment(req.session.user.id, req.body.houseId, req.body.text);
+		res.redirect(`/houses/${comment.house._id}`);
+	} catch (e) {
+		res.sendStatus(500);
+	}
+});
 
-        const d = new Date();
-        let month = d.getMonth() + 1;
-        let day = d.getDate();
-        if(month < 10){
-            month = "0" + month;
-        }
-        else if(day < 10){
-            day = "0" + day;
-        }
-        const date = d.getFullYear() + "-" + month + "-" + day;
+router.delete('/:id', async (req, res) => {
+	try {
+		await commentData.removeComment(req.params.id);
+		res.redirect(`/users/${req.session.user.id}`);
+	} catch (e) {
+		res.status(500).json({ error: e }); // todo!!!!!!!!!!!!!!!!!!
+	}
+});
 
-        const newComment = {
-            user: {
-                _id: userId,
-                username: `${user.username}`
-            },
-            house: {
-                _id: houseId,
-                houseInfo: `${house.houseInfo}`
-            },
-            commentDate: date,
-            text: text
-        };
-        const insertInfo = await commentCollection.insertOne(newComment);
-        const id = insertInfo.insertedId + "";
-        await users.addCommentToUser(userId, id, house.houseInfo, date, text);
-        await houses.addCommentToHouse(houseId, id, user.username, date, text);
-        return await this.getCommentById(insertInfo.insertedId);
-    },
-
-    async removeComment(id) {
-        const commentCollection = await comments();
-        const comment = await this.getCommentById(id);
-        await users.removeCommentFromUser(comment.user._id, id);
-        await houses.removeCommentFromHouse(comment.house._id, id);
-        const deletionInfo = await commentCollection.removeOne({_id: ObjectId.createFromHexString(id)});
-        if (deletionInfo.deletedCount === 0) throw `Could not delete comment with id of ${id}`
-        return;
-    }
-};
+module.exports = router;
