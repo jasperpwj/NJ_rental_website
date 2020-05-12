@@ -17,7 +17,7 @@ app.engine('handlebars', exphbs({
 	defaultLayout: 'main',
 	helpers: {
 		toJson : function(context) {
-			return JSON.stringify(context);
+			return JSON.stringify(context).replace(/[\']/g, "&apos;");
 		}
 	}
 }));
@@ -39,6 +39,8 @@ app.use(
 	})
 );
 
+// todo 60 min
+
 app.use(async (req, res, next) => {
 	const now = new Date().toUTCString();
 	let userText = "";
@@ -51,30 +53,79 @@ app.use(async (req, res, next) => {
 	next();
 });
 
+app.use('/users/new', async (req, res, next) => {
+	if(req.session.user) {
+		return res.status(403).redirect('/houses/');
+	}
+	next();
+});
+
+app.use('/users/login', async (req, res, next) => {
+	if(req.session.user) {
+		return res.status(403).redirect('/houses/');
+	}
+	next();
+});
+
 app.use('/users/profile', async (req, res, next) => {
 	if (!req.session.user) {
-		return res.status(401).render('usershbs/login');
+		return res.status(403).redirect('/users/login');
+	}
+	next();
+});
+
+app.use('/users/logout', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(403).redirect('/users/login');
+	}
+	next();
+});
+
+app.use('/users/:id/edit', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(403).redirect('/users/login');
+	}
+	next();
+});
+
+app.use('/users/:id/newHouse', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(403).redirect('/users/login');
+	}
+	next();
+});
+
+app.use('/users/removestorehouse/:houseid', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(403).redirect('/users/login');
 	}
 	next();
 });
 
 app.use('/houses/storehouse/:houseid', async (req, res, next) => {
 	if (!req.session.user) {
-		return res.status(401).render('usershbs/login');
+		return res.status(403).redirect('/users/login');
 	}
 	next();
 });
 
 app.use('/houses/removestorehouse/:houseid', async (req, res, next) => {
 	if (!req.session.user) {
-		return res.status(401).render('usershbs/login');
+		return res.status(403).redirect('/users/login');
+	}
+	next();
+});
+
+app.use('/houses/:id/edit', async (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(403).redirect('/users/login');
 	}
 	next();
 });
 
 app.use('/comments', async (req, res, next) => {
 	if (!req.session.user) {
-		return res.status(401).render('usershbs/login');
+		return res.status(403).redirect('/users/login');
 	}
 	next();
 });
