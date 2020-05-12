@@ -1,0 +1,71 @@
+<article>
+    <div class="container-fluid">
+        <h2>Edit House Information</h2>
+        <p>House Address: {{house.houseInfo}}</p>
+        <form action="/houses/{{house._id}}" id="housesEditForm" method="POST">
+            <input type="hidden" name="_method" value="PATCH" />
+            <div class="form-group">
+                <label for="editStatement">Statement of the house: </label>
+                <textarea class="form-control" name="statement" id="editStatement">{{house.statement}}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="editType">Room Type</label>
+                <select class="form-control mb-2 mr-sm-2" id="editType" name="roomType">
+                    <option value="">Select Type</option>
+                    <option value="Private Room">Private Room</option>
+                    <option value="Entire home/apt">Entire home/apt</option>
+                    <option value="Shared Room">Shared Room</option>
+                    <option value="Hotel Room">Hotel Room</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editPrice">Price </label>
+                <input class="form-control mb-2 mr-sm-2" type="number" name="price" id="editPrice" min="0" value="{{house.price}}">
+            </div>
+            <button type="submit" class="btn btn-primary">Change house information</button>
+            <a href="/houses/{{house._id}}" class="btn btn-primary">Back to the house page</a>
+            <div id="editFormError"></div>
+        </form>
+    </div>
+    <br>
+
+
+
+    <div class="container-fluid">
+        <h2>Add image</h2>
+        <form action="/houses/addimg/{{house._id}}" id="housesEditImgForm" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="img">Choose Image</label>
+                <input lass="form-control-file border" type="file" name="image" id="img" accept="image/jpeg, image/png">
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            <div class="alert alert-danger" id="editImgError" hidden></div>
+        </form>
+    </div>
+
+    <div class="container-fluid">
+        <h2>House Images</h2>
+        <div class="row">
+            {{#if hasImages}}
+                {{#each images}}
+                    <div class="column">
+                        <img src="/houses/image/{{this.filename}}" alt="">
+                    </div>
+                    <div class="content">
+                        <form method="POST" action="/houses/{{../house._id}}/removeimage/{{this.filename}}">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button class="btn btn-primary" type="submit">Delete</button>
+                        </form>
+                    </div>
+                {{/each}}
+            {{else}}
+                <p>No images to show</p>
+            {{/if}}
+        </div>
+
+    </div>
+
+    <script src="/public/js/houseseditform.js"></script>
+</article>

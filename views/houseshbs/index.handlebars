@@ -1,0 +1,68 @@
+<section class="container-fluid">
+    <h1>Jersey City Rental Website</h1>
+    
+    <input type="hidden" id="allHouses" value='{{{ toJson houses }}}'>
+    <div class="fixed" id="map"></div>
+
+    <form class="form-inline" action="/houses/sort" method="POST">
+        <label class="mb-2 mr-sm-2" for="sort">Sort: </label>
+        <select class="form-control mb-2 mr-sm-2" id="sort" name="sort">
+            <option value="">All</option>
+            <option value="priceUp">Payment (low to high)</option>
+            <option value="priceDown">Payment (high to low)</option>
+            <option value="newest">Newest</option>
+        </select>
+        <button class="btn btn btn-dark mb-2" type="submit">GO!</button>
+    </form>
+
+    <form class="form-inline" action="/houses/search" method="POST">
+        <label class="mb-2 mr-sm-2" for="search">Type: </label>
+        <select class="form-control mb-2 mr-sm-2" id="search" name="search">
+            <option value="">All</option>
+            <option value="Private Room">Private Room</option>
+            <option value="Entire home/apt">Entire home/apt</option>
+            <option value="Shared Room">Shared Room</option>
+            <option value="Hotel Room">Hotel Room</option>
+        </select>
+
+        <label class="mb-2 mr-sm-2" for="low">Price From: </label>
+        <input class="form-control mb-2 mr-sm-2" id="low" name="low" type="number" min="0" max="5000" step="100" placeholder="low">
+        <label class="mb-2 mr-sm-2" for="high">To: </label>
+        <input class="form-control mb-2 mr-sm-2" id="high" name="high" type="number" min="0" max="5000" step="100" placeholder="high">
+
+        <button class="btn btn btn-dark mb-2" type="submit">Search</button>
+    </form>
+
+<!--Error Msg-->
+    {{#if isEmpty}}
+    <div class="alert alert-danger alert-dismissible fade show" id="sort-error" hidden><p >{{ error }}</p></div>
+    {{else}}
+    {{#each houses}}
+<!-- Show house list-->
+        <div class="container-fluid" id="house-list">
+            <div class="row" id="index-row">
+                <div class="column" id="con-img">
+                    <div class="content">
+                        {{#if images}}
+                            <img src="/houses/image/{{images.[0]}}" alt="" style="width: 80%">
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="column" id="con-text">
+                    <div class="content" >
+                        <p><a class="link" href="/houses/{{_id}}">{{houseInfo}}</a></p>
+                        <p>Post Date: {{postedDate}}</p>
+                        <p>Room Type: {{roomType}}</p>
+                        <p>Price: {{price}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <br>
+    {{/each}}
+    {{/if}}
+    <script src="/public/js/mapform.js"></script>
+</section>
