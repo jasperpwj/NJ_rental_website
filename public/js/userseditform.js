@@ -1,3 +1,6 @@
+$('#nav-login').hide();
+$('#nav-new').hide();
+
 $('#usersEditForm').submit((event) => {
     let hasError = false;
     $('#pwError').hide();

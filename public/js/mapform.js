@@ -15,7 +15,6 @@ if(sortForm){
         if(sort.value === ""){
             return;
         }
-        sortForm.submit();
     });
 }
 if(searchForm){
@@ -24,13 +23,9 @@ if(searchForm){
         if(!search.value && !low.value && !high.value){
             return;
         }
-        if((low.value && !high.value) || ((!low.value && high.value))){
-            return;
-        }
         if(Number(low.value) > Number(high.value)){
             return;
         }
-        searchForm.submit();
     });
 }
 
@@ -59,16 +54,9 @@ function initMap() {
         });
 
         const id = allHouses[i]._id + "";
-        const contentString = 
-        allHouses[i].images[0]?
+        const contentString =
             '<div class="infoWindow">'+
             '<div><img class="infoImg" src="/houses/image/'+ allHouses[i].images[0] +'"></div>' +
-            '<div><a href="/houses/'+ id +'">'+ allHouses[i].houseInfo +'</a></div>' +
-            '<div>'+ allHouses[i].roomType +'</div>' +
-            '<div>$'+ allHouses[i].price + ' / month</div>'
-            +'</div>'
-        :
-            '<div class="infoWindow">'+
             '<div><a href="/houses/'+ id +'">'+ allHouses[i].houseInfo +'</a></div>' +
             '<div>'+ allHouses[i].roomType +'</div>' +
             '<div>$'+ allHouses[i].price + ' / month</div>'

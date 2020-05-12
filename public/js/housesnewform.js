@@ -1,80 +1,5 @@
-// let latlng;
-
-// $('#back').click(() => {
-//     $('#addrDiv').show();
-//     $('#judgeDiv').hide();
-//     $('#nextDiv').hide();
-// });
-
-// $('#next').click(() => {
-//     $('#addrDiv').hide();
-//     $('#judgeDiv').hide();
-//     $('#houseNewMap').hide();
-//     $('#nextDiv').show();
-// });
-
-// $('#backToAddr').click(() => {
-//     $('#addrDiv').show();
-//     $('#judgeDiv').hide();
-//     $('#houseNewMap').show();
-//     $('#nextDiv').hide();
-// });
-
-// function initMap() {
-//     const map = new google.maps.Map($('#houseNewMap'), {
-//         zoom: 12,
-//         center: {lat: 40.728157, lng: -74.077644} // jersey city lat lng
-//     });
-//     const geocoder = new google.maps.Geocoder();
-//     $('#check').click(() => {
-//         geocodeAddress(geocoder, map);
-//     });
-// }
-
-// function geocodeAddress(geocoder, resultsMap) {
-//     const address = $('#address').val();
-//     if(address !== ""){
-//         geocoder.geocode({'address': address}, (results, status) => {
-//             if (status === 'OK') {
-//                 latlng = results[0].geometry.location;
-//                 resultsMap.zoom = 18;
-//                 resultsMap.setCenter(latlng);
-//                 new google.maps.Marker({
-//                     map: resultsMap,
-//                     position: latlng
-//                 });
-
-//                 $('#addrDiv').hide();
-//                 $('#judgeDiv').show();
-//             } else {
-//                 alert('Geocode was not successful for the following reason: ' + status);
-//             }
-//         });
-//     }
-// }
-
-// $('#housesNewForm').submit((event) => {
-//     event.preventDefault();
-//     $('#formError').hide();
-//     if(latlng !== undefined) {
-//         $('#lat').val() = latlng.lat();
-//         $('#lng').val() = latlng.lng();
-//     }
-
-//     if(!$('#statement').val() || !$('#type').val() || !$('#price').val() || !$('#image').val()) {
-//         $('#formError').show();
-//         !$('#formError').html('Error: Please make sure that every field is filled and an image is choosen!');
-//         return;
-//     }else {
-//         const arr = $('#image').val().split('.');
-//             if(arr[arr.length - 1] !== 'jpg' && arr[arr.length - 1] !== 'png'){
-//                 $('#formError').show();
-//                 !$('#formError').html('Error: The file could only be image(jpg, jpeg, png) format!');
-//                 return;
-//             }
-//     }
-//     $('#housesNewForm').submit();
-// })
+$('#nav-login').hide();
+$('#nav-new').hide();
 
 let form = document.getElementById('housesNewForm');
 let houseNewMap = document.getElementById('houseNewMap');
@@ -165,3 +90,81 @@ if(form){
         form.submit();
     });
 }
+
+// let latlng;
+
+// $('#back').click(() => {
+//     $('#addrDiv').show();
+//     $('#judgeDiv').hide();
+//     $('#nextDiv').hide();
+// });
+
+// $('#next').click(() => {
+//     $('#addrDiv').hide();
+//     $('#judgeDiv').hide();
+//     $('#houseNewMap').hide();
+//     $('#nextDiv').show();
+// });
+
+// $('#backToAddr').click(() => {
+//     $('#addrDiv').show();
+//     $('#judgeDiv').hide();
+//     $('#houseNewMap').show();
+//     $('#nextDiv').hide();
+// });
+
+// function initMap() {
+//     const map = new google.maps.Map($('#houseNewMap'), {
+//         zoom: 12,
+//         center: {lat: 40.728157, lng: -74.077644} // jersey city lat lng
+//     });
+//     const geocoder = new google.maps.Geocoder();
+//     $('#check').click(() => {
+//         geocodeAddress(geocoder, map);
+//     });
+// }
+
+// function geocodeAddress(geocoder, resultsMap) {
+//     const address = $('#address').val();
+//     if(address !== ""){
+//         geocoder.geocode({'address': address}, (results, status) => {
+//             if (status === 'OK') {
+//                 latlng = results[0].geometry.location;
+//                 resultsMap.zoom = 18;
+//                 resultsMap.setCenter(latlng);
+//                 new google.maps.Marker({
+//                     map: resultsMap,
+//                     position: latlng
+//                 });
+
+//                 $('#addrDiv').hide();
+//                 $('#judgeDiv').show();
+//             } else {
+//                 alert('Geocode was not successful for the following reason: ' + status);
+//             }
+//         });
+//     }
+// }
+
+// $('#housesNewForm').submit((event) => {
+//     event.preventDefault();
+//     $('#formError').hide();
+//     if(latlng !== undefined) {
+//         $('#lat').val() = latlng.lat();
+//         $('#lng').val() = latlng.lng();
+//     }
+
+//     if(!$('#statement').val() || !$('#type').val() || !$('#price').val() || !$('#image').val()) {
+//         $('#formError').show();
+//         !$('#formError').html('Error: Please make sure that every field is filled and an image is choosen!');
+//         return;
+//     }else {
+//         const arr = $('#image').val().split('.');
+//             if(arr[arr.length - 1] !== 'jpg' && arr[arr.length - 1] !== 'png'){
+//                 $('#formError').show();
+//                 !$('#formError').html('Error: The file could only be image(jpg, jpeg, png) format!');
+//                 return;
+//             }
+//     }
+//     $('#housesNewForm').submit();
+// })

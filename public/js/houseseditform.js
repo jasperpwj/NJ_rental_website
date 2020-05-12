@@ -1,3 +1,6 @@
+$('#nav-login').hide();
+$('#nav-new').hide();
+
 $('#housesEditForm').submit((event) => {
     event.preventDefault();
     $('#editFormError').hide();
