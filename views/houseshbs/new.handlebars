@@ -1,0 +1,87 @@
+<article class="container-fluid">
+    <h1>Post Your house For Rental</h1>
+    <form action="/houses" id="housesNewForm" method="POST" enctype="multipart/form-data">
+        <textarea name="userId" hidden>{{userid}}</textarea>
+
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="lng" id="lng">
+        {{!-- <input type="number" step="0.000001" name="lat" id="lat" placeholder="lat">
+        <input type="number" step="0.000001" name="lng" id="lng" placeholder="lng"> --}}
+
+        <div id="addrDiv">
+            <div class="form-group">
+                <label for="address">House Address: </label>
+                <textarea class="form-control" rows="2" name="houseInfo" id="address"
+                placeholder="e.g. 313 7th St, Jersey City, NJ 07302">{{newHouse.houseInfo}}</textarea>
+            </div>
+            <div>
+                <label for="check">
+                    <input id="check" type="button" class="btn btn-dark" value="search your house">
+                </label>
+            </div>
+        </div>
+
+        <div id="judgeDiv" hidden>
+            <div class="alert alert-info">
+                <strong>Note: </strong> click 'next' if the location is correct on the map. Otherwise, click 'back'.
+            </div>
+            <label for="next">
+                <input id="next" class="btn btn-dark" type="button" value="NEXT"></label>
+            <label for="back">
+                <input id="back" class="btn btn-dark" type="button" value="BACK"></label>
+        </div>
+
+        <div id="houseNewMap"></div>
+
+        <div id="nextDiv" hidden>
+
+            <div class="form-group">
+                <label for="statement">Statement about the house: </label>
+                <textarea class="form-control" rows="3" name="statement" id="statement"
+                placeholder="e.g. Jersey City, 1-Bedroom Garden Apt.">{{newHouse.statement}}</textarea>
+            </div>
+
+            <div>
+                <label for="type">Room Type</label>
+                <select class="form-control" id="type" name="roomType">
+                    <option value="">Select Type</option>
+                    <option value="Private Room">Private Room</option>
+                    <option value="Entire home/apt">Entire home/apt</option>
+                    <option value="Shared Room">Shared Room</option>
+                    <option value="Hotel Room">Hotel Room</option>
+                </select>
+            </div>
+            <br>
+            <div >
+                <label for="price">Price (per month): $
+                <input type="number" class="form-control" name="price" id="price" min="0" placeholder="e.g. 200" value="{{newHouse.price}}"></label>
+            </div>
+            <div>
+                <label for="image">Choose Image</label>
+                <input type="file" class="form-control-file border" name="image" id="image" accept="image/jpeg, image/png">
+            </div>
+            <br>
+
+            <div>
+                <button type="submit" class="btn btn-dark">Post New House</button>
+                <button type="reset" class="btn btn-dark">Clear Form</button>
+                <label for="backToAddr"><input type="button"  class="btn btn-dark" id="backToAddr" value="BACK"></label>
+            </div>
+
+            <div id="formError"></div>
+        </div>
+
+    </form>
+
+    {{#if hasErrors}}
+    <ul>
+        {{#each errors}}
+        <li>
+            {{this}}
+        </li>
+        {{/each}}
+    </ul>
+    {{/if}}
+
+    <script src="/public/js/housesnewform.js"></script>
+</article>
