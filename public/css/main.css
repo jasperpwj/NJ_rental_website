@@ -254,3 +254,25 @@ body {
     padding-right: 20%;
     padding-bottom: 30px;
 }
+
+/* Create four equal columns that floats next to each other */
+.img-col {
+    float: left;
+    width: 100%;
+    max-width: 400px;
+    padding-left: 30px;
+    height: 300px; /* Should be removed. Only for demonstration */
+}
+#img-col img {
+    width: 200px;
+    height: 200px;
+}
+#img-col #add-button {
+    padding-left: 50px;
+}
+
+/* Clear floats after the columns */
+#img-row:after {
+    content: "";
+    display: table;
+    clear: both;}
