@@ -35,8 +35,14 @@ const upload = multer({ storage });
 /*********************************************************************************/
 
 router.get('/', async (req, res) => {
+	let usr;
+	if(req.session.user) {
+		 usr = true;
+	} else {
+		usr = false;
+	}
 	const houseList = await houseData.getAllHouses();
-	res.render('houseshbs/index', {houses: houseList});
+	res.render('houseshbs/index', {houses: houseList, usr: usr});
 });
 
 router.get('/:id', async (req, res) => {
