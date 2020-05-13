@@ -237,7 +237,6 @@ router.post('/', upload.single('image'), async (req, res) => {
 //AJAX routes
 router.post('/new', async (req, res) => {
 	const newComment = await commentData.addComment(req.session.user.id, req.body.houseId, req.body.text);
-	console.log(newComment);
 	res.render('partials/addcomment', {layout:null, ...newComment});
 });
 
