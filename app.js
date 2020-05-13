@@ -39,7 +39,12 @@ app.use(
 	})
 );
 
-// todo 60 min
+app.use(async (req, res, next) => {
+	const expiresAt = new Date();
+	expiresAt.setHours(expiresAt.getHours() + 1);
+	req.session.cookie.expires = expiresAt;
+	next();
+});
 
 app.use(async (req, res, next) => {
 	const now = new Date().toUTCString();
