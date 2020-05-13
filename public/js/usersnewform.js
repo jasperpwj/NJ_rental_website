@@ -11,11 +11,7 @@ let passwordError = document.getElementById("passwordError");
 let emailError = document.getElementById("emailError");
 let phoneNumError = document.getElementById("phoneNumError");
 
-let signOut = document.getElementById("nav-logout");
-let aProfile = document.getElementById("nav-profile");
 
-signOut.hidden = true;
-aProfile.hidden = true;
 
 if(userNewForm){
     userNewForm.addEventListener('submit', (event) => {

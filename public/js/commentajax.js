@@ -3,7 +3,7 @@
     console.log("start");
     var newForm = $('#housesSingleForm'),
         commentList = $('#house-comment'),
-        houseId = $('#houseFormId');
+        houseId = $('#houseFormId'),
     newInput = $('#comment');
 
 

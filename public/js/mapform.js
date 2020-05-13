@@ -9,6 +9,27 @@ let search = document.getElementById('search');
 let low = document.getElementById('low');
 let high = document.getElementById('high');
 
+let login = document.getElementById('nav-login');
+let logout = document.getElementById('nav-logout');
+let signUp = document.getElementById('nav-new');
+let profile = document.getElementById('nav-profile');
+let usr = $('#usr').text();
+
+if(usr === 'true') {
+    login.hidden = true;
+    signUp.hidden = true;
+    logout.hidden = false;
+    profile.hidden = false;
+
+} else {
+    login.hidden = false;
+    signUp.hidden = false;
+    logout.hidden = true;
+    profile.hidden = true;
+}
+
+
+
 if(sortForm){
     sortForm.addEventListener('submit', (event) => {
         event.preventDefault();

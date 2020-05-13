@@ -1,13 +1,8 @@
 let form = document.getElementById('housesSingleForm');
 let comment = document.getElementById('comment');
 
-//new by JP
-let signIn = document.getElementById("nav-login");
-let signUp = document.getElementById("nav-new");
 let slideNum = 1;
 
-signIn.hidden = true;
-signUp.hidden = true;
 showSlides(slideNum);
 
 function nextSlides(n) {
