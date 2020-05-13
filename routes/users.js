@@ -1,6 +1,7 @@
 const express     = require('express'), 
  	  data 		  = require('../data'), 
 	  bcrypt  	  = require('bcryptjs'),
+	  xss         = require('xss'),
 	  router      = express.Router(),
 	  userData    = data.users,
 	  houseData   = data.houses,
@@ -15,7 +16,7 @@ router.get('/login', async (req, res) => {
 });
 
 router.get('/profile', async (req, res) => {
-	res.redirect(`/users/${req.session.user.id}`);
+	res.redirect(`/users/${xss(req.session.user.id)}`);
 });
 
 router.get('/logout', async (req, res) => {
@@ -25,7 +26,7 @@ router.get('/logout', async (req, res) => {
 
 router.get('/:id/edit', async (req, res) => {
 	try {
-		const user = await userData.getUserById(req.params.id);
+		const user = await userData.getUserById(xss(req.params.id));
 		res.render('usershbs/edit', {user: user});
 	} catch (e) {
 		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
@@ -34,8 +35,8 @@ router.get('/:id/edit', async (req, res) => {
 
 router.get('/:id/newHouse', async (req, res) => {
 	try {
-		await userData.getUserById(req.params.id);
-		res.render('houseshbs/new', {userid: req.params.id});
+		await userData.getUserById(xss(req.params.id));
+		res.render('houseshbs/new', {userid: xss(req.params.id)});
 	} catch (e) {
 		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
 	}
@@ -49,7 +50,7 @@ router.get('/:id', async (req, res) => {
 		return res.sendStatus(403);
 	}
 	try {
-		const user = await userData.getUserById(req.params.id);
+		const user = await userData.getUserById(xss(req.params.id));
 		res.render('usershbs/single', {user: user});
 	} catch (e) {
 		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
@@ -58,8 +59,8 @@ router.get('/:id', async (req, res) => {
 
 router.get('/removestorehouse/:houseid', async (req, res) => {
 	try {
-		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
-		res.redirect(`/users/${req.session.user.id}`);
+		await houseData.removeStoreByUser(xss(req.params.houseid), xss(req.session.user.id));
+		res.redirect(`/users/${xss(req.session.user.id)}`);
 	} catch (e) {
 		res.status(404).json({ error: 'User/House not found' });// todo!!!!!!!!!!!!!!!!!!!!
 	}
@@ -169,8 +170,8 @@ router.patch('/:id', async (req, res) => {
 		return res.status(404).json({ error: 'Update failed' }); // todo!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	}
 	try {
-		await userData.updateUser(req.params.id, updatedObject);
-		res.redirect(`/users/${req.params.id}`);
+		await userData.updateUser(xss(req.params.id), updatedObject);
+		res.redirect(`/users/${xss(req.params.id)}`);
 	} catch (e) {
 		res.status(500).json({ error: e });
 	}
