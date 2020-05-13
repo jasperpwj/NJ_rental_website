@@ -54,7 +54,7 @@
                 <ul>
                     {{#each user.houseLists}}
                         <div>
-                            <p>house information: {{this.houseInfo}}</p>
+                            <p><a class="link" href="/houses/{{this._id}}">house information: {{this.houseInfo}}</a></p>
                         </div>
                         <div>
                             <a class="link" href="/houses/{{this._id}}/edit">Edit house data</a>

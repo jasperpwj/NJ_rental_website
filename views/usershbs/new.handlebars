@@ -4,10 +4,10 @@
             <a class="nav-link" href="/houses">Home</a>
         </li>
         <li class="nav-item" id="nav-login">
-            <a class="nav-link" href="/users/login">sign in</a>
+            <a class="nav-link" href="/users/login">Sign In</a>
         </li>
         <li class="nav-item" id="nav-new">
-            <a class="nav-link" href="/users/new">sign up</a>
+            <a class="nav-link" href="/users/new">Sign Up</a>
 
 
 
@@ -49,19 +49,19 @@
         <div class="form-group">
             <label for="email">Email: </label>
             <input type="email" class="form-control" name="email" id="email" placeholder="username@example.com" value="{{newUser.email}}">
-            <div class="alert alert-danger" id="emailError" hidden></div>
         </div>
+        <div class="alert alert-danger" id="emailError" hidden></div>
         <br>
 
         <div class="form-group">
             <label for="phoneNumber">Phone Number: </label>
             <input type="tel" class="form-control" name="phoneNumber" id="phoneNumber" placeholder="e.g. 123-456-7890"
                     value="{{newUser.phoneNumber}}" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}">
-            <div class="alert alert-danger" id="phoneNumError" hidden></div>
+            <div class="alert alert-info">
+                <strong>Note:</strong> Phone number format: xxx-xxx-xxxx
+            </div>
         </div>
-        <div class="alert alert-info">
-            <strong>Note:</strong> Phone number format: xxx-xxx-xxxx
-        </div>
+        <div class="alert alert-danger" id="phoneNumError" hidden></div>
         <br>
 
         <div>
