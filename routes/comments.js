@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const data = require('../data');
-const xss = require('xss');
 const commentData = data.comments;
 
 router.post('/', async (req, res) => {
@@ -10,7 +9,7 @@ router.post('/', async (req, res) => {
 		return;
 	}
 	try {
-		const comment = await commentData.addComment(req.session.user.id, req.body.houseId, xss(req.body.text));
+		const comment = await commentData.addComment(req.session.user.id, req.body.houseId, req.body.text);
 		res.redirect(`/houses/${comment.house._id}`);
 	} catch (e) {
 		res.status(500).render('errorshbs/error500');
