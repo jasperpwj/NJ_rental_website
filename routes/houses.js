@@ -3,6 +3,7 @@ const data = require('../data');
 const router = express.Router();
 const houseData = data.houses;
 const commentData = data.comments;
+const xss = require('xss');
 
 /*********************************************************************************/
 const path = require('path');
@@ -92,7 +93,7 @@ router.post('/search', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		const house = await houseData.getHouseById(req.params.id);
+		const house = await houseData.getHouseById(xss(req.params.id));
 		if(req.session.user){
 			const storeList = house.storedByUsers;
 			for(let i = 0; i < storeList.length; i++){
@@ -120,8 +121,8 @@ router.get('/:id', async (req, res) => {
 
 router.get('/storehouse/:houseid', async (req, res) => {
 	try {
-		await houseData.storedByUser(req.params.houseid, req.session.user.id);
-		res.redirect(`/houses/${req.params.houseid}`);
+		await houseData.storedByUser(xss(req.params.houseid), xss(req.session.user.id));
+		res.redirect(`/houses/${xss(req.params.houseid)}`);
 	} catch (e) {
 		res.status(404).render('houseshbs/index', {
 			houses: [], 
@@ -133,8 +134,8 @@ router.get('/storehouse/:houseid', async (req, res) => {
 
 router.get('/removestorehouse/:houseid', async (req, res) => {
 	try {
-		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
-		res.redirect(`/houses/${req.params.houseid}`);
+		await houseData.removeStoreByUser(xss(req.params.houseid), xss(req.session.user.id));
+		res.redirect(`/houses/${xss(req.params.houseid)}`);
 	} catch (e) {
 		res.status(404).render('houseshbs/index', {
 			houses: [], 
@@ -146,7 +147,7 @@ router.get('/removestorehouse/:houseid', async (req, res) => {
 
 router.get('/:id/edit', async (req, res) => {
 	try {
-		const house = await houseData.getHouseById(req.params.id);
+		const house = await houseData.getHouseById(xss(req.params.id));
 		let imgs = [];
 		if(house.images.length > 0){
 			for(let i = 0; i < house.images.length; i++){
@@ -239,11 +240,11 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 router.post('/addimg/:id', upload.single('image'), async (req, res) => {
 	if(!req.file){
-		return res.redirect(`/houses/${req.params.id}/edit`);
+		return res.redirect(`/houses/${xss(req.params.id)}/edit`);
 	}
 	let updatedObject = {};
 	try {
-		const oldHouse = await houseData.getHouseById(req.params.id);
+		const oldHouse = await houseData.getHouseById(xss(req.params.id));
 		updatedObject.images = oldHouse.images;
 		updatedObject.images.push(req.file.filename);
 	} catch (e) {
@@ -251,8 +252,8 @@ router.post('/addimg/:id', upload.single('image'), async (req, res) => {
 		return;
 	}
 	try {
-		await houseData.updateHouse(req.params.id, updatedObject);
-		res.redirect(`/houses/${req.params.id}/edit`);
+		await houseData.updateHouse(xss(req.params.id), updatedObject);
+		res.redirect(`/houses/${xss(req.params.id)}/edit`);
 	} catch (e) {
 		res.sendStatus(500);
 	}
@@ -263,7 +264,7 @@ router.patch('/:id', async (req, res) => {
 
 	let updatedObject = {};
 	try {
-		const house = await houseData.getHouseById(req.params.id);
+		const house = await houseData.getHouseById(xss(req.params.id));
         if (reqBody.statement && reqBody.statement !== house.statement) {
 			updatedObject.statement = reqBody.statement;
 		}
@@ -284,7 +285,7 @@ router.patch('/:id', async (req, res) => {
 		});
 	}
 	try {
-		await houseData.updateHouse(req.params.id, updatedObject);
+		await houseData.updateHouse(xss(req.params.id), updatedObject);
 		res.redirect(`/houses/${req.params.id}/edit`);
 	} catch (e) {
 		res.sendStatus(500);
@@ -294,10 +295,10 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id/removeimage/:filename', async(req, res) => {
 	let updatedObject = {};
 	try {
-		const oldHouse = await houseData.getHouseById(req.params.id);
+		const oldHouse = await houseData.getHouseById(xss(req.params.id));
 		updatedObject.images = oldHouse.images;
 
-		const index = updatedObject.images.indexOf(req.params.filename);
+		const index = updatedObject.images.indexOf(xss(req.params.filename));
 		if (index > -1) {
 			updatedObject.images.splice(index, 1);
 		}
@@ -312,7 +313,7 @@ router.delete('/:id/removeimage/:filename', async(req, res) => {
 	}
 	
     try{
-        await gfs.remove({ filename: req.params.filename, root: 'images' });
+        await gfs.remove({ filename: xss(req.params.filename), root: 'images' });
         return res.redirect(`/houses/${req.params.id}/edit`);
     } catch(e) {
         res.status(404).json({ e: "DELETE /houses/removeimage/:filename" }); // todo!!!!!!!!!
@@ -323,7 +324,7 @@ router.delete('/:id', async (req, res) => {
 	if (!req.params.id) throw 'You must specify an ID to delete';
 	let house = null;
 	try {
-		house = await houseData.getHouseById(req.params.id);
+		house = await houseData.getHouseById(xss(req.params.id));
 		if(house.comments.length !== 0){
 			for(let i = 0; i < house.comments.length; i++){
 				const commentId = house.comments[i]._id;
@@ -341,8 +342,8 @@ router.delete('/:id', async (req, res) => {
 		return;
 	}
 	try {
-		await houseData.removeHouse(req.params.id);
-		res.redirect(`/users/${req.session.user.id}`);
+		await houseData.removeHouse(xss(req.params.id));
+		res.redirect(`/users/${xss(req.session.user.id)}`);
 	} catch (e) {
 		res.sendStatus(500);
 	}
