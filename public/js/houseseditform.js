@@ -24,7 +24,7 @@
 //             $('#housesEditImgForm').submit();
 //         }else {
 //             $('#editImgError').show();
-//             $('#editImgError').html('Error: The file could only be image(jpg, jpeg, png) format!');
+//             $('#editImgError').html('Error: The file could only be image(jpg, png) format!');
 //         }
 //     }else {
 //         $('#editImgError').show();
@@ -73,7 +73,7 @@ if(housesEditImgForm){
                 housesEditImgForm.submit();
             } else {
                 editImgError.hidden = false;
-                editImgError.innerHTML = 'Error: The file could only be image(jpg, jpeg, png) format!';
+                editImgError.innerHTML = 'Error: The file could only be image(jpg png) format!';
             }
         } else {
             editImgError.hidden = false;
