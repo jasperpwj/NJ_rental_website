@@ -1,7 +1,6 @@
 const express     = require('express'), 
  	  data 		  = require('../data'), 
 	  bcrypt  	  = require('bcryptjs'),
-	  xss         = require('xss'),
 	  router      = express.Router(),
 	  userData    = data.users,
 	  houseData   = data.houses,
@@ -67,7 +66,7 @@ router.get('/removestorehouse/:houseid', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-	let userInfo = xss(req.body);
+	let userInfo = req.body;
 	let errors = [];
 	let allNames = [];
 	let allEmails = [];
@@ -83,7 +82,7 @@ router.post('/', async (req, res) => {
 	if (!userInfo.username) {
 		errors.push('Error: Please check that you\'ve entered an username');
 	} else {
-		let username = xss(userInfo.username);
+		let username = userInfo.username;
 		for (let i = 0; i < allNames.length; i++) {
 			if (username.toLowerCase() === allNames[i].toLowerCase()) {
 				errors.push('Error: The username you entered is invalid, please try another one');
@@ -106,14 +105,14 @@ router.post('/', async (req, res) => {
 		return res.status(401).render('usershbs/new', {
 			errors: errors,
 			hasErrors: true,
-			newUser: xss(userInfo)
+			newUser: userInfo
 		});
 	}
 
 	try {
 		const pw = await bcrypt.hash(userInfo.password, saltRounds);
 		const newuser = await userData.addUser(
-			xss(userInfo.username), xss(userInfo.email), xss(userInfo.phoneNumber), pw
+			userInfo.username, userInfo.email, userInfo.phoneNumber, pw
 		);
 		req.session.user = {id: newuser._id, name: newuser.username};
 		res.redirect(`/users/${newuser._id}`);
@@ -123,7 +122,7 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-	let userInfo = xss(req.body);
+	let userInfo = req.body;
 	let errors = []; 
 	const message = "Error: Either username or password does not match";
 	
@@ -150,16 +149,16 @@ router.post('/login', async (req, res) => {
 });
 
 router.patch('/:id', async (req, res) => {
-	const reqBody = xss(req.body);
+	const reqBody = req.body;
 	
 	let updatedObject = {};
 	try {
 		const user = await userData.getUserById(req.params.id);
         if (reqBody.email && reqBody.email !== user.email) {
-			updatedObject.email = xss(reqBody.email);
+			updatedObject.email = reqBody.email;
 		}
         if (reqBody.phoneNumber && reqBody.phoneNumber !== user.phoneNumber) {
-			updatedObject.phoneNumber = xss(reqBody.phoneNumber);
+			updatedObject.phoneNumber = reqBody.phoneNumber;
 		}
         if (reqBody.password) {
 			const pw = await bcrypt.hash(reqBody.password, saltRounds);
