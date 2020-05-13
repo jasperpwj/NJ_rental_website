@@ -159,7 +159,7 @@ if(form){
 //         const arr = $('#image').val().split('.');
 //             if(arr[arr.length - 1] !== 'jpg' && arr[arr.length - 1] !== 'png'){
 //                 $('#formError').show();
-//                 !$('#formError').html('Error: The file could only be image(jpg, jpeg, png) format!');
+//                 !$('#formError').html('Error: The file could only be image(jpg, png) format!');
 //                 return;
 //             }
 //     }
