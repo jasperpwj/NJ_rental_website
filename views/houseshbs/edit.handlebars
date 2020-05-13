@@ -62,25 +62,28 @@
 
     <div class="container-fluid">
         <h2>House Images</h2>
-        <div class="row">
+        <div class="row" id="img-row">
             {{#if hasImages}}
                 {{#each images}}
-                    <div class="column">
-                        <img src="/houses/image/{{this.filename}}" alt="">
+                    <div class="column" id="img-col">
+                        <div id="add-img">
+                            <img src="/houses/image/{{this.filename}}" alt="img">
+                        </div>
+                        <div>
+                            <form id="add-button" method="POST" action="/houses/{{../house._id}}/removeimage/{{this.filename}}">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button class="btn btn-primary" type="submit">Delete</button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="content">
-                        <form method="POST" action="/houses/{{../house._id}}/removeimage/{{this.filename}}">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button class="btn btn-primary" type="submit">Delete</button>
-                        </form>
-                    </div>
+
                 {{/each}}
             {{else}}
                 <p>No images to show</p>
             {{/if}}
         </div>
-
     </div>
+
 
     <script src="/public/js/houseseditform.js"></script>
 </article>
