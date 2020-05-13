@@ -4,7 +4,7 @@
     <input type="hidden" id="allHouses" value='{{{ toJson houses }}}'>
     <div class="fixed" id="map"></div>
 
-    <form class="form-inline" action="/houses/sort" method="POST">
+    <form class="form-inline" id="sortForm" action="/houses/sort" method="POST">
         <label class="mb-2 mr-sm-2" for="sort">Sort: </label>
         <select class="form-control mb-2 mr-sm-2" id="sort" name="sort">
             <option value="">All</option>
@@ -15,7 +15,7 @@
         <button class="btn btn btn-dark mb-2" type="submit">GO!</button>
     </form>
 
-    <form class="form-inline" action="/houses/search" method="POST">
+    <form class="form-inline" id="searchForm" action="/houses/search" method="POST">
         <label class="mb-2 mr-sm-2" for="search">Type: </label>
         <select class="form-control mb-2 mr-sm-2" id="search" name="search">
             <option value="">All</option>
@@ -26,16 +26,16 @@
         </select>
 
         <label class="mb-2 mr-sm-2" for="low">Price From: </label>
-        <input class="form-control mb-2 mr-sm-2" id="low" name="low" type="number" min="0" max="5000" step="100" placeholder="low">
+        <input class="form-control mb-2 mr-sm-2" id="low" name="low" type="number" min="0" max="10000" step="100" placeholder="low">
         <label class="mb-2 mr-sm-2" for="high">To: </label>
-        <input class="form-control mb-2 mr-sm-2" id="high" name="high" type="number" min="0" max="5000" step="100" placeholder="high">
+        <input class="form-control mb-2 mr-sm-2" id="high" name="high" type="number" min="0" max="10000" step="100" placeholder="high">
 
         <button class="btn btn btn-dark mb-2" type="submit">Search</button>
     </form>
 
 <!--Error Msg-->
     {{#if isEmpty}}
-    <div class="alert alert-danger alert-dismissible fade show" id="sort-error" hidden><p >{{ error }}</p></div>
+    <div class="alert alert-danger alert-dismissible fade show" id="sort-error"><p>{{ error }}</p></div>
     {{else}}
     {{#each houses}}
 <!-- Show house list-->
@@ -64,5 +64,6 @@
         <br>
     {{/each}}
     {{/if}}
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="/public/js/mapform.js"></script>
 </section>
