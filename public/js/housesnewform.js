@@ -1,4 +1,3 @@
-
 let form = document.getElementById('housesNewForm');
 let houseNewMap = document.getElementById('houseNewMap');
 let addrDiv = document.getElementById('addrDiv');
@@ -10,12 +9,6 @@ let type = document.getElementById('type');
 let price = document.getElementById('price');
 let image = document.getElementById('image');
 let formError = document.getElementById('formError');
-
-let signIn = document.getElementById("nav-login");
-let signUp = document.getElementById("nav-new");
-
-signIn.hidden = true;
-signUp.hidden = true;
 
 let latlng;
 
