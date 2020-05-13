@@ -9,7 +9,6 @@ let logout = document.getElementById('nav-logout');
 let signUp = document.getElementById('nav-new');
 let profile = document.getElementById('nav-profile');
 let usrs = $('#usrs').text();
-console.log(usrs)
 
 if(usrs === 'true') {
     login.hidden = true;
