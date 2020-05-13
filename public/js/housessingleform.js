@@ -29,14 +29,14 @@ function showSlides (n){
     slides[slideNum-1].style.display = "block";
 }
 
-if(form){
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if(comment.value){
-            form.submit();
-        }
-    });
-}
+// if(form){
+//     form.addEventListener('submit', (event) => {
+//         event.preventDefault();
+//         if(comment.value){
+//             form.submit();
+//         }
+//     });
+// }
 
 // $('#housesSingleForm').submit((event) => {
 //     event.preventDefault();
