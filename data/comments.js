@@ -13,6 +13,7 @@ module.exports = {
     },
 
     async getCommentById(id) {
+        if (!id) throw '(COMMENT) You must provide comment id';
         const commentCollection = await comments();
         if(typeof id === 'string'){
             id = ObjectId.createFromHexString(id);
@@ -23,21 +24,12 @@ module.exports = {
     },
 
     async addComment(userId, houseId, text) {
-        if (!userId) throw 'You must provide userId';
-        if (!houseId) throw 'You must provide houseId';
-        if(typeof userId === 'string'){
-            userId = ObjectId.createFromHexString(userId);
-        }
-        if(typeof houseId === 'string'){
-            houseId = ObjectId.createFromHexString(houseId);
-        }
-
+        if (!userId) throw '(COMMENT) You must provide user id';
+        if (!houseId) throw '(COMMENT) You must provide house id';
+        if (!text || typeof text !== 'string') throw '(COMMENT) You must provide text';
         const commentCollection = await comments();
         const user = await users.getUserById(userId);
         const house = await houses.getHouseById(houseId);
-
-        if (!user) throw 'User not found';
-        if (!house) throw 'House not found';
 
         const d = new Date();
         let month = d.getMonth() + 1;
@@ -70,15 +62,9 @@ module.exports = {
     },
 
     async removeComment(id) {
-        if (!id) throw  'You must provide id';
-        if(typeof id === 'string'){
-            id = ObjectId.createFromHexString(id);
-        }
+        if (!id) throw '(COMMENT) You must provide comment id';
         const commentCollection = await comments();
         const comment = await this.getCommentById(id);
-
-        if (!comment) throw 'Comment not found';
-
         await users.removeCommentFromUser(comment.user._id, id);
         await houses.removeCommentFromHouse(comment.house._id, id);
         const deletionInfo = await commentCollection.removeOne({_id: ObjectId.createFromHexString(id)});

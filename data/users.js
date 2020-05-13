@@ -11,6 +11,7 @@ module.exports = {
     },
 
     async getUserById(id) {
+        if (!id) throw '(USER) You must provide user id';
         const userCollection = await users();
         if(typeof id === 'string'){
             id = ObjectId.createFromHexString(id);
@@ -21,6 +22,7 @@ module.exports = {
     },
 
     async getUserByName(name) {
+        if (!name || typeof name !== 'string') throw '(USER) You must provide name';
         const userCollection = await users();
         const user = await userCollection.findOne({username: name});
         if (!user) throw 'User not found';
@@ -28,6 +30,10 @@ module.exports = {
     },
     
     async addUser(username, email, phoneNumber, password) {
+        if (!username || typeof username !== 'string') throw '(USER) You must provide username';
+        if (!email || typeof email !== 'string') throw '(USER) You must provide email';
+        if (!phoneNumber || typeof phoneNumber !== 'string') throw '(USER) You must provide phoneNumber';
+        if (!password || typeof password !== 'string') throw '(USER) You must provide password';
         const userCollection = await users();
         const newUser = {
             username: username,
@@ -44,6 +50,8 @@ module.exports = {
     },
 
     async updateUser(id, newUser){
+        if (!id) throw '(USER) You must provide user id';
+        if (!newUser || typeof(newUser) !== 'object') throw '(USER) You must provide new user';
         const userCollection = await users();
         let oldUser = null;
         try{
@@ -62,7 +70,7 @@ module.exports = {
     },
     
     async removeUser(id){
-        if (!id) throw 'You must provide an id to search for';
+        if (!id) throw '(USER) You must provide id';
         const userCollection = await users();
         if(typeof id === 'string'){
           id = ObjectId.createFromHexString(id);
@@ -73,6 +81,9 @@ module.exports = {
     },
     
     async addHouseToUser(userId, houseId, houseInfo){
+        if (!userId) throw '(USER) You must provide user id';
+        if (!houseId) throw '(USER) You must provide house id';
+        if (!houseInfo || typeof houseInfo !== 'string') throw '(USER) You must provide house info';
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
@@ -91,6 +102,8 @@ module.exports = {
     },
     
     async removeHouseFromUser(userId, houseId){
+        if (!userId) throw '(USER) You must provide user id';
+        if (!houseId) throw '(USER) You must provide house id';
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
@@ -108,6 +121,11 @@ module.exports = {
     },
 
     async addCommentToUser(userId, commentId, houseInfo, commentDate, text) {
+        if (!userId) throw '(USER) You must provide user id';
+        if (!commentId) throw '(USER) You must provide comment id';
+        if (!houseInfo || typeof houseInfo !== 'string') throw '(USER) You must provide house info';
+        if (!commentDate || typeof commentDate !== 'string') throw '(USER) You must provide comment date';
+        if (!text || typeof text !== 'string') throw '(USER) You must provide text';
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
@@ -128,6 +146,8 @@ module.exports = {
     },
 
     async removeCommentFromUser(userId, commentId){
+        if (!userId) throw '(USER) You must provide user id';
+        if (!commentId) throw '(USER) You must provide comment id';
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
@@ -145,6 +165,9 @@ module.exports = {
     },
 
     async userStoreHouse(userId, houseId, houseInfo) {
+        if (!userId) throw '(USER) You must provide user id';
+        if (!houseId) throw '(USER) You must provide house id';
+        if (!houseInfo || typeof houseInfo !== 'string') throw '(USER) You must provide house info';
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
@@ -163,6 +186,8 @@ module.exports = {
     },
 
     async userRemoveStoredHouse(userId, houseId){
+        if (!userId) throw '(USER) You must provide user id';
+        if (!houseId) throw '(USER) You must provide house id';
         const userCollection = await users();
         if(typeof userId === 'string'){
             userId = ObjectId.createFromHexString(userId);
