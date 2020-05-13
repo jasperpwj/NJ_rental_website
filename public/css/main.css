@@ -126,7 +126,6 @@ body {
 
 #house-info {
     width: 100%;
-    float: left;
     /*border: 2px solid #ccc;*/
 
 }
@@ -210,12 +209,13 @@ body {
 }
 #con-img {
     float: left;
-    width: 30%;
+    width: 25%;
 }
 #con-text {
-    width: 70%;
+    margin-left: 30%;
     float: right;
     text-align: center;
+    font-size: larger;
 }
 
 /* Responsive layout - makes a two column-layout instead of four columns */
@@ -241,4 +241,10 @@ body {
     width: 100%;
     height: auto;
 
+}
+
+#usersNewForm {
+    padding-left: 20%;
+    padding-right: 20%;
+    padding-bottom: 30px;
 }
