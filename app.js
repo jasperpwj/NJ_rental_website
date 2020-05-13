@@ -91,12 +91,18 @@ app.use('/users/:id/edit', async (req, res, next) => {
 	if (!req.session.user) {
 		return res.status(403).redirect('/users/login');
 	}
+	else if(req.session.user.id !== req.params.id) {
+		return res.status(403).render('errorshbs/error403');
+	}
 	next();
 });
 
 app.use('/users/:id/newHouse', async (req, res, next) => {
 	if (!req.session.user) {
 		return res.status(403).redirect('/users/login');
+	}
+	else if(req.session.user.id !== req.params.id) {
+		return res.status(403).render('errorshbs/error403');
 	}
 	next();
 });
