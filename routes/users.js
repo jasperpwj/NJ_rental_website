@@ -16,7 +16,7 @@ router.get('/login', async (req, res) => {
 });
 
 router.get('/profile', async (req, res) => {
-	res.redirect(`/users/${xss(req.session.user.id)}`);
+	res.redirect(`/users/${req.session.user.id}`);
 });
 
 router.get('/logout', async (req, res) => {
@@ -26,48 +26,48 @@ router.get('/logout', async (req, res) => {
 
 router.get('/:id/edit', async (req, res) => {
 	try {
-		const user = await userData.getUserById(xss(req.params.id));
+		const user = await userData.getUserById(req.params.id);
 		res.render('usershbs/edit', {user: user});
 	} catch (e) {
-		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
+		res.status(404).render('errorshbs/error404');
 	}
 });
 
 router.get('/:id/newHouse', async (req, res) => {
 	try {
-		await userData.getUserById(xss(req.params.id));
-		res.render('houseshbs/new', {userid: xss(req.params.id)});
+		await userData.getUserById(req.params.id);
+		res.render('houseshbs/new', {userid: req.params.id});
 	} catch (e) {
-		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
+		res.status(404).render('errorshbs/error404');
 	}
 });
 
 router.get('/:id', async (req, res) => {
 	if (!req.session.user) {
-		return res.status(401).render('usershbs/login');
+		return res.status(401).redirect('/users/login');
 	} 
 	else if(req.session.user.id !== req.params.id) {
-		return res.sendStatus(403);
+		return res.status(403).render('errorshbs/error403');
 	}
 	try {
-		const user = await userData.getUserById(xss(req.params.id));
+		const user = await userData.getUserById(req.params.id);
 		res.render('usershbs/single', {user: user});
 	} catch (e) {
-		res.status(404).json({ error: 'User not found' });// todo!!!!!!!!!!!!!!!!!!!!
+		res.status(404).render('errorshbs/error404');
 	}
 });
 
 router.get('/removestorehouse/:houseid', async (req, res) => {
 	try {
-		await houseData.removeStoreByUser(xss(req.params.houseid), xss(req.session.user.id));
-		res.redirect(`/users/${xss(req.session.user.id)}`);
+		await houseData.removeStoreByUser(req.params.houseid, req.session.user.id);
+		res.redirect(`/users/${req.session.user.id}`);
 	} catch (e) {
-		res.status(404).json({ error: 'User/House not found' });// todo!!!!!!!!!!!!!!!!!!!!
+		res.status(404).render('errorshbs/error404');
 	}
 });
 
 router.post('/', async (req, res) => {
-	let userInfo = req.body;
+	let userInfo = xss(req.body);
 	let errors = [];
 	let allNames = [];
 	let allEmails = [];
@@ -78,12 +78,12 @@ router.post('/', async (req, res) => {
 			allEmails.push(userList[i].email);
 		}
 	} catch (e) {
-		return res.sendStatus(500);
+		return res.status(500).render('errorshbs/error500');
 	}
 	if (!userInfo.username) {
 		errors.push('Error: Please check that you\'ve entered an username');
 	} else {
-		let username = userInfo.username;
+		let username = xss(userInfo.username);
 		for (let i = 0; i < allNames.length; i++) {
 			if (username.toLowerCase() === allNames[i].toLowerCase()) {
 				errors.push('Error: The username you entered is invalid, please try another one');
@@ -103,35 +103,34 @@ router.post('/', async (req, res) => {
 	if (!userInfo.phoneNumber) errors.push('Error: Please check that you\'ve entered a phone number');
 	if (!userInfo.password)    errors.push('Error: Please check that you\'ve entered a password');
 	if (errors.length > 0) {
-		return res.render('usershbs/new', {
+		return res.status(401).render('usershbs/new', {
 			errors: errors,
 			hasErrors: true,
-			newUser: userInfo
+			newUser: xss(userInfo)
 		});
 	}
 
 	try {
 		const pw = await bcrypt.hash(userInfo.password, saltRounds);
 		const newuser = await userData.addUser(
-			userInfo.username, userInfo.email, userInfo.phoneNumber, pw
+			xss(userInfo.username), xss(userInfo.email), xss(userInfo.phoneNumber), pw
 		);
 		req.session.user = {id: newuser._id, name: newuser.username};
 		res.redirect(`/users/${newuser._id}`);
 	} catch (e) {
-		res.sendStatus(500);
+		res.status(500).render('errorshbs/error500');
 	}
 });
 
 router.post('/login', async (req, res) => {
-	let userInfo = req.body;
+	let userInfo = xss(req.body);
 	let errors = []; 
 	const message = "Error: Either username or password does not match";
 	
 	if (!userInfo.username) errors.push('Error: Please check that you\'ve entered an username');
 	if (!userInfo.password) errors.push('Error: Please check that you\'ve entered a password');
 	if (errors.length > 0) {
-		res.status(401).render('usershbs/login', {error: errors, hasErrors: true});
-		return;
+		return res.status(401).render('usershbs/login', {error: errors, hasErrors: true});
 	}
 
 	try {
@@ -146,73 +145,35 @@ router.post('/login', async (req, res) => {
 			});
 		}
 	} catch (e) {
-		res.render('usershbs/login', {error: [message], hasErrors: true});
+		res.status(401).render('usershbs/login', {error: [message], hasErrors: true});
 	}
 });
 
 router.patch('/:id', async (req, res) => {
-	const reqBody = req.body;
+	const reqBody = xss(req.body);
 	
 	let updatedObject = {};
 	try {
 		const user = await userData.getUserById(req.params.id);
         if (reqBody.email && reqBody.email !== user.email) {
-			updatedObject.email = reqBody.email;
+			updatedObject.email = xss(reqBody.email);
 		}
         if (reqBody.phoneNumber && reqBody.phoneNumber !== user.phoneNumber) {
-			updatedObject.phoneNumber = reqBody.phoneNumber;
+			updatedObject.phoneNumber = xss(reqBody.phoneNumber);
 		}
         if (reqBody.password) {
 			const pw = await bcrypt.hash(reqBody.password, saltRounds);
 			updatedObject.password = pw;
 		}
 	} catch (e) {
-		return res.status(404).json({ error: 'Update failed' }); // todo!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		return res.status(404).render('errorshbs/error404');
 	}
 	try {
-		await userData.updateUser(xss(req.params.id), updatedObject);
-		res.redirect(`/users/${xss(req.params.id)}`);
+		await userData.updateUser(req.params.id, updatedObject);
+		res.redirect(`/users/${req.params.id}`);
 	} catch (e) {
-		res.status(500).json({ error: e });
+		res.status(500).render('errorshbs/error500');
 	}
 });
-
-/******************** todo ********************/
-// router.delete('/:id', async (req, res) => {
-// 	if (!req.params.id) throw 'You must specify an ID to delete';
-// 	let user = null;
-// 	try {
-// 		user = await userData.getUserById(req.params.id);
-// 		if(user.houseLists.length !== 0){
-// 			for(let i = 0; i < user.houseLists.length; i++){
-// 				const houseId = user.houseLists[i]._id;
-// 				const house = await houseData.getHouseById(houseId);
-// 				if(house.comments.length !== 0){
-// 					for(let i = 0; i < house.comments.length; i++){
-// 						const commentId = house.comments[i]._id;
-// 						await commentData.removeComment(commentId);
-// 					}
-// 				}
-// 				await houseData.removeHouse(houseId);
-// 			}
-// 		}
-// 		if(user.comments.length !== 0){
-// 			for(let i = 0; i < user.comments.length; i++){
-// 				const commentId = user.comments[i]._id;
-// 				await commentData.removeComment(commentId);
-// 			}
-// 		}
-// 	} catch (e) {
-// 		res.status(404).json({ error: 'User not found' });
-// 		return;
-// 	}
-
-// 	try {
-// 		await userData.removeUser(req.params.id);
-// 		res.json({"deleted": true, "data": user});
-// 	} catch (e) {
-// 		res.sendStatus(500);
-// 	}
-// });
 
 module.exports = router;
