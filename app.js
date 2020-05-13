@@ -15,6 +15,7 @@ const rewriteUnsuppBrowserMethods = (req, res, next) => {
 
 app.engine('handlebars', exphbs({
 	defaultLayout: 'main',
+	partialsDir: ['views/partials/'],
 	helpers: {
 		toJson : function(context) {
 			return JSON.stringify(context).replace(/[\']/g, "&apos;");
