@@ -47,6 +47,14 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+	let usrs;
+	if(req.session.user) {
+		usrs = true;
+	} else {
+		usrs = false;
+	}
+	
+	
 	try {
 		const house = await houseData.getHouseById(req.params.id);
 		if(req.session.user){
@@ -54,7 +62,8 @@ router.get('/:id', async (req, res) => {
 			for(let i = 0; i < storeList.length; i++){
 				if(storeList[i]._id === req.session.user.id){
 					return res.render('houseshbs/single', {
-						houses: house, 
+						houses: house,
+						usrs: usrs,
 						houseid: req.params.id,
 						isStored: true
 					});
