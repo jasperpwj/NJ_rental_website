@@ -71,7 +71,8 @@ router.get('/:id', async (req, res) => {
 			}
 		}
 		res.render('houseshbs/single', {
-			houses: house, 
+			houses: house,
+			usrs: usrs,
 			houseid: req.params.id
 		});
 	} catch (e) {
