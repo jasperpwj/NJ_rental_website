@@ -44,6 +44,8 @@ let housesEditImgForm = document.getElementById('housesEditImgForm');
 let img = document.getElementById('img');
 let editImgError = document.getElementById('editImgError');
 
+
+
 if(housesEditForm){
     housesEditForm.addEventListener('submit', (event) => {
         event.preventDefault();
