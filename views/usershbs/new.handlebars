@@ -6,7 +6,7 @@
             <label for="username">Username: </label>
             <input type="text" class="form-control" name="username" id="username" placeholder="Username" value="{{newUser.username}}">
             <div class="alert alert-info">
-                <strong>Note:</strong> Username cannot change after creating an account and must contain at least six characters
+                <strong>Note:</strong> Username cannot change after creating an account and must contain 6-16 characters
             </div>
             <div class="alert alert-danger" id="usernameError" hidden>
             </div>
@@ -17,8 +17,8 @@
             <label for="password">Password: </label>
             <input type="password" class="form-control" name="password" id="password" placeholder="Password">
             <div class="alert alert-info">
-                <strong>Note:</strong> Password Format: 1: only letters, numbers and underscores;
-                2: at least six letters; 3: at least one uppercase letter (A-Z)
+                <strong>Note:</strong> Password Format: 1: only letters(a-zA-Z), numbers(0-9) and underscores(_);
+                2: 6-16 letters; 3: at least one uppercase letter (A-Z)
             </div>
         </div>
         <br>
@@ -62,6 +62,6 @@
             {{/each}}
         </ul>
     {{/if}}
-
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="/public/js/usersnewform.js"></script>
 </div>
