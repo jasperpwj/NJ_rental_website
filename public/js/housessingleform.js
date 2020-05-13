@@ -3,6 +3,27 @@ let comment = document.getElementById('comment');
 
 let slideNum = 1;
 
+
+let login = document.getElementById('nav-login');
+let logout = document.getElementById('nav-logout');
+let signUp = document.getElementById('nav-new');
+let profile = document.getElementById('nav-profile');
+let usrs = $('#usrs').text();
+console.log(usrs)
+
+if(usrs === 'true') {
+    login.hidden = true;
+    signUp.hidden = true;
+    logout.hidden = false;
+    profile.hidden = false;
+
+} else {
+    login.hidden = false;
+    signUp.hidden = false;
+    logout.hidden = true;
+    profile.hidden = true;
+}
+
 showSlides(slideNum);
 
 function nextSlides(n) {
