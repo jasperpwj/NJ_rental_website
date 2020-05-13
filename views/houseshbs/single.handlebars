@@ -3,16 +3,22 @@
         <li class="nav-item" id="nav-home">
             <a class="nav-link" href="/houses">Home</a>
         </li>
-        <li class="nav-item" id="nav-logout">
+        <li class="nav-item" id="nav-login" hidden>
+            <a class="nav-link" href="/users/login">Sign In</a>
+        </li>
+        <li class="nav-item" id="nav-new" hidden>
+            <a class="nav-link" href="/users/new">Sign Up</a>
+        </li>
+        <li class="nav-item" id="nav-logout" hidden>
             <a class="nav-link" href="/users/logout">Sign out</a>
         </li>
-        <li class="nav-item" id="nav-profile">
+        <li class="nav-item" id="nav-profile" hidden>
             <a class="nav-link" href="/users/profile">Profile</a>
         </li>
 
     </ul>
 </nav>
-
+<div><p id="usrs" hidden>{{usrs}}</p></div>
 <article class="container-fluid">
 
     <div class="slideshow-container">
@@ -73,7 +79,7 @@
         {{/if}}
     </div>
 
-
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="/public/js/housessingleform.js"></script>
 
 </article>
