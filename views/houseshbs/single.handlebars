@@ -32,8 +32,8 @@
     <br>
 
     <div class="container" id="add-comment">
-        <form action="/comments" id="housesSingleForm" method="POST">
-            <textarea class="form-control" name="houseId" hidden>{{ houseid }}</textarea>
+        <form id="housesSingleForm" method="POST">
+            <input id="houseFormId" class="form-control" value="{{houseid}}" hidden/>
 
             <label for="comment">make a comment: </label>
             <textarea  class="form-control" rows="4" name="text" id="comment" cols="30"></textarea>
@@ -48,8 +48,8 @@
             <h1>Comments</h1>
             <ul>
                 {{#each houses.comments}}
-                    <div class="container" id="each-comment">
-                        <p id="user-name">User: {{this.username}}</p>
+                    <div class="container" class="each-comment">
+                        <p class="user-name">User: {{this.username}}</p>
                         <p>{{this.text}}</p>
                         <address> {{this.commentDate}}</address>
                     </div>
@@ -59,10 +59,6 @@
     </div>
 
 
-
-
-
-
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="/public/js/housessingleform.js"></script>
+
 </article>
