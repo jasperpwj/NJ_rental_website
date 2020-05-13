@@ -1,5 +1,6 @@
 const express = require('express');
 const data = require('../data');
+const xss = require('xss');
 const router = express.Router();
 const houseData = data.houses;
 const commentData = data.comments;
@@ -236,8 +237,11 @@ router.post('/', upload.single('image'), async (req, res) => {
 /*********************************************************************************/
 //AJAX routes
 router.post('/new', async (req, res) => {
+	if(!req.session.user){
+		return;
+	}
 	const newComment = await commentData.addComment(req.session.user.id, req.body.houseId, req.body.text);
-	res.render('partials/addcomment', {layout:null, ...newComment});
+	res.render('partials/addcomment', {layout: null, ...newComment});
 });
 
 /*********************************************************************************/
