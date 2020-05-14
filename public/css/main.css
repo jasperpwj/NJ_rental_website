@@ -210,7 +210,6 @@ body {
 #con-img {
     float: left;
     width: 25%;
-    background-color: #2aabd2;
 }
 
 #con-img img {
@@ -222,7 +221,6 @@ body {
     max-width: 400px;
     padding-left: 30px;
         margin: 10px auto 20px;
-    background-color: yellow;
 }
 
 #con-text {
@@ -234,7 +232,6 @@ body {
     margin-left: 30%;
     float: right;
     font-size: large;
-    background-color: #2b542c;
 }
 
 /* Responsive layout - makes a two column-layout instead of four columns */
