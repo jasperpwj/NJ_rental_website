@@ -2,6 +2,7 @@ const express     = require('express'),
  	  data 		  = require('../data'), 
 	  bcrypt  	  = require('bcryptjs'),
 	  router      = express.Router(),
+	  xss         = require('xss')
 	  userData    = data.users,
 	  houseData   = data.houses,
 	  saltRounds  = 5;
@@ -112,7 +113,7 @@ router.post('/', async (req, res) => {
 	try {
 		const pw = await bcrypt.hash(userInfo.password, saltRounds);
 		const newuser = await userData.addUser(
-			userInfo.username, userInfo.email, userInfo.phoneNumber, pw
+			xss(userInfo.username), xss(userInfo.email), xss(userInfo.phoneNumber), pw
 		);
 		req.session.user = {id: newuser._id, name: newuser.username};
 		res.redirect(`/users/${newuser._id}`);
@@ -174,7 +175,7 @@ router.patch('/:id', async (req, res) => {
 					});
 				}
 			}
-			updatedObject.email = reqBody.email;
+			updatedObject.email = xss(reqBody.email);
 		}
 
         if (reqBody.phoneNumber && reqBody.phoneNumber !== user.phoneNumber) {

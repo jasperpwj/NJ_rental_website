@@ -54,7 +54,6 @@ router.get('/:id', async (req, res) => {
 		usrs = false;
 	}
 	
-	
 	try {
 		const house = await houseData.getHouseById(req.params.id);
 		if(req.session.user){
@@ -157,8 +156,8 @@ router.post('/sort', async (req, res) => {
 
 router.post('/search', async (req, res) => {
 	const searchData = req.body.search;
-	let low = req.body.low;
-	let high = req.body.high;
+	let low = xss(req.body.low);
+	let high = xss(req.body.high);
 	low = Number( low );
 	high = Number( high );
 
@@ -216,7 +215,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     if (!housePostData.price) {
 		errors.push('No rental price provided');
 	} else {
-		housePostData.price = Number( housePostData.price );
+		housePostData.price = Number( xss(housePostData.price) );
 	}
 
 	if (!req.file) {
@@ -236,7 +235,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 	try {
 		const {houseInfo, statement, userId, lat, lng, roomType, price} = housePostData;
 		const newhouse = await houseData.addHouse(
-            houseInfo, statement, userId, lat, lng, roomType, price, images
+            houseInfo, xss(statement), userId, lat, lng, roomType, price, images
         );
 		res.redirect(`/houses/${newhouse._id}`);
 	} catch (e) {
