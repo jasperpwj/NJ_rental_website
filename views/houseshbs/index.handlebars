@@ -60,25 +60,22 @@
     {{else}}
     {{#each houses}}
 <!-- Show house list-->
-        <div class="container-fluid" id="house-list">
-            <div class="row" id="index-row">
-                <div class="column" id="con-img">
-                    <div class="content">
-                        {{#if images}}
-                            <img src="/houses/image/{{images.[0]}}" alt="" style="width: 150%">
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="column" id="con-text">
-                    <div class="content" >
-                        <p><a class="link" href="/houses/{{_id}}">{{houseInfo}}</a></p>
-                        <p>Post Date: {{postedDate}}</p>
-                        <p>Room Type: {{roomType}}</p>
-                        <p>Price: {{price}}</p>
-                    </div>
-                </div>
+    <div class="container-fluid" id="house-list">
+        <div class="row" id="index-row">
+            <div class="column" id="con-img">
+                    {{#if images}}
+                        <img src="/houses/image/{{images.[0]}}" alt="" style="width: 100%">
+                    {{/if}}
+            </div>
+            <div class="column" id="con-text">
+                    <p><a class="link" href="/houses/{{_id}}">{{houseInfo}}</a></p>
+                    <p>Post Date: {{postedDate}}</p>
+                    <p>Room Type: {{roomType}}</p>
+                    <p>Price: {{price}}</p>
             </div>
         </div>
+    </div>
+
 
 
 
