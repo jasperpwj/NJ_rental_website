@@ -255,18 +255,19 @@ body {
 .infoImg{
     width: 100%;
     height: auto;
+
 }
 
 #usersNewForm {
     padding-left: 20%;
     padding-right: 20%;
-    padding-bottom: 10%;
+    padding-bottom: 30px;
 }
 
 #usersEditForm {
     padding-left: 20%;
     padding-right: 20%;
-    padding-bottom: 10%;
+    padding-bottom: 30px;
 }
 
 /* Create four equal columns that floats next to each other */
@@ -290,3 +291,15 @@ body {
     content: "";
     display: table;
     clear: both;}
+
+#usersNewForm {
+    padding-left: 20%;
+    padding-right: 20%;
+    padding-bottom: 10%;
+}
+
+#usersEditForm {
+    padding-left: 20%;
+    padding-right: 20%;
+    padding-bottom: 10%;
+}
