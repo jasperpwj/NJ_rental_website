@@ -80,7 +80,7 @@ if(form){
             const arr = image.value.split('.');
             if(arr[arr.length - 1] !== 'jpg' && arr[arr.length - 1] !== 'png'){
                 formError.hidden = false;
-                formError.innerHTML = 'Error: The file could only be image(jpg, jpeg, png) format!';
+                formError.innerHTML = 'Error: The file could only be image(jpg, png) format!';
                 return;
             }
         }
