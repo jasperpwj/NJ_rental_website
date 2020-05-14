@@ -187,40 +187,11 @@ body {
 
 }
 
-#con-img img {
-    object-fit: contain;
-    text-align: center;
-    width: auto;
-    height: auto;
-    max-height: 250px;
-    max-width: 400px;
-    padding-left: 30px;
-    margin: 10px auto 20px;
-
-}
-
-#con-text {
-    width: 400px;
-    height: 250px;
-    text-align: center;
-
-    /*background-color: #2aabd2;*/
-}
-
-
 /* Add padding BETWEEN each column */
 #index-row > #con-img,
 #index-row > #con-text {
     padding: 4px;
 }
-
-/* Clear floats after rows */
-.row:after {
-    content: "";
-    display: table;
-    clear: both;
-}
-
 
 /* Clear floats after rows */
 .row:after {
@@ -235,14 +206,30 @@ body {
     padding: 10px;
 
 }
+
 #con-img {
     float: left;
     width: 25%;
 }
+
+#con-img img {
+        object-fit: contain;
+        text-align: center;
+        width: auto;
+        height: auto;
+    max-height: 250px;
+    max-width: 400px;
+    padding-left: 30px;
+        margin: 10px auto 20px;
+
+}
+
 #con-text {
+    width: 400px;
+    height: 250px;
+    text-align: center;
     margin-left: 30%;
     float: right;
-    text-align: center;
     font-size: large;
 }
 
