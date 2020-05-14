@@ -8,9 +8,6 @@
         </li>
         <li class="nav-item" id="nav-new">
             <a class="nav-link" href="/users/new">Sign Up</a>
-
-
-
     </ul>
 </nav>
 
@@ -68,16 +65,18 @@
             <button type="submit" class="btn btn-dark">Create New Account</button>
             <button type="reset" class="btn btn-dark">Clear Form</button>
         </div>
-    </form>
-    {{#if hasErrors}}
+        <br>
+        {{#if hasErrors}}
         <ul class="alert alert-danger alert-dismissible fade show">
-            {{#each error}}
-                <li>
-                    {{this}}
-                </li>
+            {{#each errors}}
+            <li>
+                {{this}}
+            </li>
             {{/each}}
         </ul>
-    {{/if}}
+        {{/if}}
+    </form>
+
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="/public/js/usersnewform.js"></script>
 </div>

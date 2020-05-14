@@ -9,8 +9,6 @@
         <li class="nav-item" id="nav-profile">
             <a class="nav-link" href="/users/profile">Profile</a>
         </li>
-
-
     </ul>
 </nav>
 
@@ -54,7 +52,14 @@
             <button class="btn btn-dark" type="reset">Clear Form</button>
             <a class="btn btn-dark" href="/users/{{user._id}}">Go Back</a>
         </div>
+        <br>
+        {{#if hasErrors}}
+        <div class="alert alert-danger alert-dismissible fade show">
+            <p>{{errors}}</p>
+        </div>
+        {{/if}}
     </form>
+
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="/public/js/userseditform.js"></script>
 </article>
