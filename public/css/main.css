@@ -184,15 +184,43 @@ body {
 .row {
     margin: 8px -16px;
     border: 2px solid #ccc;
-    height: 250px;
+
 }
 
+#con-img img {
+    object-fit: contain;
+    text-align: center;
+    width: auto;
+    height: auto;
+    max-height: 250px;
+    max-width: 400px;
+    padding-left: 30px;
+    margin: 10px auto 20px;
+
+}
+
+#con-text {
+    width: 400px;
+    height: 250px;
+    text-align: center;
+
+    /*background-color: #2aabd2;*/
+}
+
+
 /* Add padding BETWEEN each column */
-#index-row,
 #index-row > #con-img,
 #index-row > #con-text {
-    padding: 8px;
+    padding: 4px;
 }
+
+/* Clear floats after rows */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 
 /* Clear floats after rows */
 .row:after {
