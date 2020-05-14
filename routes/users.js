@@ -150,13 +150,33 @@ router.post('/login', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
 	const reqBody = req.body;
-	
+
+	let allEmails = [];
+	try {
+		const userList = await userData.getAllUsers();
+		for (let i = 0; i < userList.length; i++) {
+			allEmails.push(userList[i].email);
+		}
+	} catch (e) {
+		return res.status(500).render('errorshbs/error500');
+	}
+
 	let updatedObject = {};
 	try {
 		const user = await userData.getUserById(req.params.id);
-        if (reqBody.email && reqBody.email !== user.email) {
+        if (reqBody.email) {
+			const email = reqBody.email.toLowerCase();
+			for (let i = 0; i < allEmails.length; i++) {
+				if (email === allEmails[i].toLowerCase()) {
+					return res.status(401).render(`usershbs/edit`, {
+						errors: 'Error: The email you entered is invalid, please try another one', 
+						hasErrors: true
+					});
+				}
+			}
 			updatedObject.email = reqBody.email;
 		}
+
         if (reqBody.phoneNumber && reqBody.phoneNumber !== user.phoneNumber) {
 			updatedObject.phoneNumber = reqBody.phoneNumber;
 		}
